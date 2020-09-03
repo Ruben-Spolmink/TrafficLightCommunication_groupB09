@@ -1,0 +1,16 @@
+﻿TODO:
+
+
+
+
+
+
+
+
+LOG:
+
+03-09-2020: 
+-made git repository added
+-added WIP branch
+-added TODO/LOG file
+

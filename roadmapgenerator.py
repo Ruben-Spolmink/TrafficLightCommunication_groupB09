@@ -2,7 +2,12 @@ import math
 import sys
 import copy
 
-
+# Generate roadmap
+# Call as follows: roadmapgenerator.py gridsize, streetlength, intersections
+# gridsize is the size of a cell in cm. e.g. 10 means the cells are 10x10 cm
+# streetlength is the length of a street between intersections in cm
+# intersections is the number of intersections (must be the square of a number)
+# The streets leading to the intersections from the edges are 1/2*streetlength
 def generatepattern(streetlength, gridsize):
     # assuming street = 3m wide
     # Outer street lengths are 1/2 * streetlength, distance between intersections is streetlength

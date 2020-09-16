@@ -1,4 +1,5 @@
 ﻿TODO:
+
 -Model
 --map for traffic
 --spawn traffic
@@ -13,14 +14,14 @@
 --change lanes
 --car route
 
-
-
 LOG:
 
 03-09-2020(Ruben):
+
 -made git repository added
 -added WIP branch
 -added TODO/LOG file
 
 16-09-2020(Ruben):
 -added skeleton files for TrafficLight, TrafficModel and Car
+

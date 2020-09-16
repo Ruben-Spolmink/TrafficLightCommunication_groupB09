@@ -161,4 +161,6 @@ else:
 map = generatemap(gridsize, streetlength, intersections)
 with open("Generatedmap.txt", "w") as mapfile:
     for row in map:
-        mapfile.write(str(row) + "\n")
+        for element in row:
+            mapfile.write(str(element))
+        mapfile.write("\n")

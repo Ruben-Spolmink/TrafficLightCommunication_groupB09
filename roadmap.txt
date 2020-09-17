@@ -1,8 +1,8 @@
 x,x,x,cs,n,x,x,x
 x,x,x,s,n,x,x,x
-x,x,x,s,n,x,x,x
-w,w,w,o,o,w,w,cw
-ce,e,e,o,o,e,e,e
-x,x,x,s,n,x,x,x
+x,x,x,l,n,x,x,x
+w,w,w,o,o,l,w,cw
+ce,e,l,o,o,e,e,e
+x,x,x,s,l,x,x,x
 x,x,x,s,n,x,x,x
 x,x,x,s,cn,x,x,x

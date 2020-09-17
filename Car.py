@@ -1,7 +1,12 @@
 from mesa import Agent, Model
 
-class Car(Agent):
-    def __init__(self, unique_id):
-        super().__init__(unique_id, model)
+class CarAgent(Agent):
+    def __init__(self, name, model, speed, direction, goal, nextlane):
+        super().__init__(name, model)
+        self.speed = speed
+        self.direction = direction
+        self.goal = ""
+        self.nextlane = ""
+
     def step(self):
-        #what actions to do
+        pass

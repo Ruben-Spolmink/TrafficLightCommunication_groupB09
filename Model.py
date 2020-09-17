@@ -37,6 +37,8 @@ class Intersection(Model):
         self.grid = MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
         [self.roadmap, self.spawns, self.lights] = readroadmap()
+        self.schedule = RandomActivation(self)
+        self.running = True
 
         for i, light in enumerate(self.lights):
             location = self.lights[light]
@@ -48,13 +50,14 @@ class Intersection(Model):
             print("placed_traffic_agent")
 
 
-
         for i, spawn in enumerate(self.spawns):
             direction = spawn[1]
             location = self.spawns[spawn]
             xlocation = width-1-int(location[0])
             ylocation = height-1-int(location[1])
-            car = CarAgent(i, self, 1, direction,  "", "")
+            car = CarAgent(i, self, 1, direction,[xlocation, ylocation])
             self.schedule.add(car)
             self.grid.place_agent(car, (xlocation, ylocation))
             print("placed_car")
+    def step(self):
+        self.schedule.step()

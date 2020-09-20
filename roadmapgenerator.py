@@ -23,7 +23,7 @@ def generatepattern(streetlength, gridsize):
     cellsperlane = int(cellsperlane)
     cellsperstreet = int(cellsperstreet)
     # Upper part
-    for i in range(cellsperstreet):
+    for i in range(cellsperstreet-1):
         row = []
         for j in range(cellsperstreet):
             row.append("X,")
@@ -42,63 +42,111 @@ def generatepattern(streetlength, gridsize):
         for j in range(cellsperstreet):
             row.append("X,")
         pattern.append(row)
+    lastrow = []
+    for j in range(cellsperstreet):
+        lastrow.append("X,")
+    for j in range(cellsperlane):
+        lastrow.append("TSR,")
+    for j in range(cellsperlane):
+        lastrow.append("TSD,")
+    for j in range(cellsperlane):
+        lastrow.append("TSL,")
+    for j in range(cellsperlane):
+        lastrow.append("TNL,")
+    for j in range(cellsperlane):
+        lastrow.append("TND,")
+    for j in range(cellsperlane):
+        lastrow.append("TNR,")
+    for j in range(cellsperstreet):
+        lastrow.append("X,")
+    pattern.append(lastrow)
     # Middle part
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet):
+        for j in range(cellsperstreet-1):
             row.append("WR,")
+        row.append("TWR,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        for j in range(cellsperstreet):
+        row.append("TWR,")
+        for j in range(cellsperstreet-1):
             row.append("WR,")
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet):
+        for j in range(cellsperstreet-1):
             row.append("WD,")
+        row.append("TWD,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        for j in range(cellsperstreet):
+        row.append("TWD,")
+        for j in range(cellsperstreet-1):
             row.append("WD,")
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet):
+        for j in range(cellsperstreet-1):
             row.append("WL,")
+        row.append("TWL,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        for j in range(cellsperstreet):
+        row.append("TWL,")
+        for j in range(cellsperstreet-1):
             row.append("WL,")
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet):
+        for j in range(cellsperstreet-1):
             row.append("EL,")
+        row.append("TEL,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        for j in range(cellsperstreet):
+        row.append("TEL,")
+        for j in range(cellsperstreet-1):
             row.append("EL,")
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet):
+        for j in range(cellsperstreet-1):
             row.append("ED,")
+        row.append("TED,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        for j in range(cellsperstreet):
+        row.append("TED,")
+        for j in range(cellsperstreet-1):
             row.append("ED,")
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet):
+        for j in range(cellsperstreet-1):
             row.append("ER,")
+        row.append("TER,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        for j in range(cellsperstreet):
+        row.append("TER,")
+        for j in range(cellsperstreet-1):
             row.append("ER,")
         pattern.append(row)
     # Lower part
-    for i in range(cellsperstreet):
+    firstrow = []
+    for j in range(cellsperstreet):
+        firstrow.append("X,")
+    for j in range(cellsperlane):
+        firstrow.append("TSR,")
+    for j in range(cellsperlane):
+        firstrow.append("TSD,")
+    for j in range(cellsperlane):
+        firstrow.append("TSL,")
+    for j in range(cellsperlane):
+        firstrow.append("TNL,")
+    for j in range(cellsperlane):
+        firstrow.append("TND,")
+    for j in range(cellsperlane):
+        firstrow.append("TNR,")
+    for j in range(cellsperstreet):
+        firstrow.append("X,")
+    pattern.append(firstrow)
+    for i in range(cellsperstreet-1):
         row = []
         for j in range(cellsperstreet):
             row.append("X,")

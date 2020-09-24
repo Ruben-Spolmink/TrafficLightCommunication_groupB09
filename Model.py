@@ -15,8 +15,8 @@ NumberOfAgents = 0
 def readroadmap(): #needs to correctly read in roadmapfile
     filepath = 'Generatedmap.txt'
     roadmap = []
-    spawns = {}
-    lights = {}
+    spawns = []
+    lights = []
     run = 0
     with open(filepath, 'r') as roadmapfile:
         text = roadmapfile.readlines()
@@ -26,9 +26,9 @@ def readroadmap(): #needs to correctly read in roadmapfile
             roadmap.append(road)
             for y, tile in enumerate(road):
                 if tile.startswith("C"):
-                    spawns[tile] = [x, y]
+                    spawns.append([[x, y], tile])
                 if tile.startswith("T"):
-                    lights[run] = [x, y]
+                    lights.append([[x, y], tile])
                     run +=1
     return roadmap, spawns, lights, height
 
@@ -43,7 +43,7 @@ class Intersection(Model):
         self.running = True
 
         for light in self.lights:
-            location = self.lights[light]
+            location = light[0]
             xlocation = self.width-1-int(location[0])
             ylocation = self.height-1-int(location[1])
             trafficlight = TrafficLight(NumberOfAgents, self,"red")
@@ -52,13 +52,13 @@ class Intersection(Model):
             self.grid.place_agent(trafficlight, (xlocation, ylocation))
             print("placed_traffic_agent")
 
-
         for spawn in self.spawns:
-            direction = spawn[1]
-            location = self.spawns[spawn]
+            self.direction = spawn[1][1]
+            self.lane = spawn[1][2]
+            location = spawn[0]
             xlocation = self.width-1-int(location[0])
             ylocation = self.height-1-int(location[1])
-            car = CarAgent(NumberOfAgents, self, 1, direction,[xlocation, ylocation])
+            car = CarAgent(NumberOfAgents, self, 1, self.direction, [xlocation, ylocation], self.lane)
             NumberOfAgents += 1
             self.schedule.add(car)
             self.grid.place_agent(car, (xlocation, ylocation))
@@ -70,7 +70,7 @@ class Intersection(Model):
         for i in range(agents_per_tick):
             xlocation = self.random.randrange(self.grid.width)
             ylocation = self.random.randrange(self.grid.height)
-            car = CarAgent(NumberOfAgents, self, 1, "n",[xlocation, ylocation])
+            car = CarAgent(NumberOfAgents, self, 1, "N",[xlocation, ylocation], self.lane)
             NumberOfAgents += 1
             self.schedule.add(car)
             self.grid.place_agent(car, (xlocation, ylocation))

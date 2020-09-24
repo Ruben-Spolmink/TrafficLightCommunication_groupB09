@@ -6,11 +6,10 @@ from mesa.visualization.ModularVisualization import ModularServer
 
 Intersectionmodel = Intersection
 
-
 grid = CanvasGrid(agent_portrayal, Intersectionmodel().width, Intersectionmodel().height, 500, 500)
 server = ModularServer(Intersectionmodel,
                        [grid],
                        "Intersectionmodel"
                        )
-server.port = 8521 # The default
+server.port = 8522 # The default
 server.launch()

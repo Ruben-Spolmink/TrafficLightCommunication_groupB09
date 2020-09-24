@@ -70,7 +70,7 @@ class Intersection(Model):
         for i in range(agents_per_tick):
             xlocation = self.random.randrange(self.grid.width)
             ylocation = self.random.randrange(self.grid.height)
-            car = CarAgent(NumberOfAgents, self, 1, "n",[xlocation, ylocation])
+            car = CarAgent(NumberOfAgents, self, 1, "N",[xlocation, ylocation])
             NumberOfAgents += 1
             self.schedule.add(car)
             self.grid.place_agent(car, (xlocation, ylocation))

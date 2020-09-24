@@ -198,6 +198,26 @@ def generatemap(gridsize, streetlength, intersections):
     return pattern
 
 
+def createspawns(map, gridsize, streetlength, intersections):
+    for i in range(int(math.sqrt(intersections))):
+        row = i*len(map[1])/math.sqrt(intersections)
+
+        # row = last grass patch
+        row = row + streetlength/2/gridsize-1
+        # First half row
+        row = row + math.ceil(300/gridsize/2)
+        for i in range(3):
+            map[int(row)][-1] = "C" + map[int(row)][-1]
+            map[0][int(row)] = "C" + map[0][int(row)]
+            row = row + 300/gridsize
+        for i in range(3):
+            map[int(row)][0] = "C" + map[int(row)][0]
+            map[-1][int(row)] = "C" + map[-1][int(row)]
+            row = row + 300 / gridsize
+
+    return map
+
+
 if len(sys.argv) == 4:
     gridsize = int(sys.argv[1])
     streetlength = int(sys.argv[2])
@@ -207,6 +227,7 @@ else:
     streetlength = 30000
     intersections = 1
 map = generatemap(gridsize, streetlength, intersections)
+map = createspawns(map, gridsize, streetlength, intersections)
 with open("Generatedmap.txt", "w") as mapfile:
     for row in map:
         for element in row:

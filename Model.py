@@ -21,10 +21,10 @@ def readroadmap(): #needs to correctly read in roadmapfile
     with open(filepath, 'r') as roadmapfile:
         text = roadmapfile.readlines()
         height = (len(text[0].split(",")))
-        for x, line in enumerate(text):
+        for y, line in enumerate(text):
             road = line.strip().split(',')
             roadmap.append(road)
-            for y, tile in enumerate(road):
+            for x, tile in enumerate(road):
                 if tile.startswith("C"):
                     spawns.append([[x, y], tile])
                 if tile.startswith("T"):
@@ -44,7 +44,7 @@ class Intersection(Model):
 
         for light in self.lights:
             location = light[0]
-            xlocation = self.width-1-int(location[0])
+            xlocation = int(location[0])
             ylocation = self.height-1-int(location[1])
             trafficlight = TrafficLight(NumberOfAgents, self,"red")
             NumberOfAgents += 1
@@ -56,7 +56,7 @@ class Intersection(Model):
             self.direction = spawn[1][1]
             self.lane = spawn[1][2]
             location = spawn[0]
-            xlocation = self.width-1-int(location[0])
+            xlocation = int(location[0])
             ylocation = self.height-1-int(location[1])
             car = CarAgent(NumberOfAgents, self, 1, self.direction, [xlocation, ylocation], self.lane)
             NumberOfAgents += 1
@@ -71,8 +71,8 @@ class Intersection(Model):
             if random.randint(0, 100) < spawnchance:
                 # if it is possible to spawn a car (NEEDS TO BE IMPLEMENTED)
                 location = spawn[0]
-                xlocation = xlocation = self.width-1-int(location[0])
-                ylocation = ylocation = self.height-1-int(location[1])
+                xlocation = int(location[0])
+                ylocation = self.height-1-int(location[1])
                 direction = spawn[1][1]
                 car = CarAgent(NumberOfAgents, self, 1, direction,[xlocation, ylocation], self.lane)
                 NumberOfAgents += 1

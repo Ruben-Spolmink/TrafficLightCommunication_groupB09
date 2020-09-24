@@ -12,13 +12,13 @@ class CarAgent(Agent):
     def move(self):
         possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center = False)
         if(self.direction == "N"):
-            new_position = (self.pos[0]+1, self.pos[1])
-        if(self.direction == "E"):
-            new_position = (self.pos[0], self.pos[1]-1)
-        if(self.direction == "S"):
-            new_position = (self.pos[0]-1, self.pos[1])
-        if(self.direction == "W"):
             new_position = (self.pos[0], self.pos[1]+1)
+        if(self.direction == "E"):
+            new_position = (self.pos[0]+1, self.pos[1])
+        if(self.direction == "S"):
+            new_position = (self.pos[0], self.pos[1]-1)
+        if(self.direction == "W"):
+            new_position = (self.pos[0]-1, self.pos[1])
         if new_position in possible_steps:#checks if new position is not out of the grid
             cell_contents = self.model.grid.get_cell_list_contents([new_position])#gets a list of agents in that cell
             if not any(isinstance(agent, CarAgent) for agent in cell_contents): #complex statement that checks if there aren't any cars in that cell

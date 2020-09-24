@@ -8,7 +8,7 @@ from mesa.visualization.ModularVisualization import ModularServer
 from Car import CarAgent
 from TrafficLight import TrafficLight
 from Portrayal import agent_portrayal
-agents_per_tick = 3 #this should be an parameter in model interface
+spawnchance = 3 #this should be an parameter in model interface
 NumberOfAgents = 0
 
 
@@ -65,13 +65,17 @@ class Intersection(Model):
             print("placed_car")
 
     def step(self):
-        global agents_per_tick
+        global spawnchance
         global NumberOfAgents
-        for i in range(agents_per_tick):
-            xlocation = self.random.randrange(self.grid.width)
-            ylocation = self.random.randrange(self.grid.height)
-            car = CarAgent(NumberOfAgents, self, 1, "N",[xlocation, ylocation], self.lane)
-            NumberOfAgents += 1
-            self.schedule.add(car)
-            self.grid.place_agent(car, (xlocation, ylocation))
+        for spawn in self.spawns:
+            if random.randint(0, 100) < spawnchance:
+                # if it is possible to spawn a car (NEEDS TO BE IMPLEMENTED)
+                location = spawn[0]
+                xlocation = xlocation = self.width-1-int(location[0])
+                ylocation = ylocation = self.height-1-int(location[1])
+                direction = spawn[1][1]
+                car = CarAgent(NumberOfAgents, self, 1, direction,[xlocation, ylocation], self.lane)
+                NumberOfAgents += 1
+                self.schedule.add(car)
+                self.grid.place_agent(car, (xlocation, ylocation))
         self.schedule.step()

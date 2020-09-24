@@ -10,41 +10,42 @@ from TrafficLight import TrafficLight
 from Portrayal import agent_portrayal
 agents_per_tick = 3 #this should be an parameter in model interface
 NumberOfAgents = 0
+
+
 def readroadmap(): #needs to correctly read in roadmapfile
-    filepath = 'roadmap.txt'
+    filepath = 'Generatedmap.txt'
     roadmap = []
     spawns = {}
     lights = {}
     run = 0
     with open(filepath, 'r') as roadmapfile:
         text = roadmapfile.readlines()
+        height = (len(text[0].split(",")))
         for x, line in enumerate(text):
             road = line.strip().split(',')
             roadmap.append(road)
             for y, tile in enumerate(road):
-                if tile.startswith("c"):
+                if tile.startswith("C"):
                     spawns[tile] = [x, y]
-                if tile.startswith("l"):
+                if tile.startswith("T"):
                     lights[run] = [x, y]
                     run +=1
-    return roadmap, spawns, lights
-
+    return roadmap, spawns, lights, height
 
 
 class Intersection(Model):
-    def __init__(self, height=10, width=10): #should change so height and widht are same as Generatedmap
+    def __init__(self): #should change so height and widht are same as Generatedmap
         global NumberOfAgents
-        self.height = height
-        self.width = width
-        self.grid = MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
-        [self.roadmap, self.spawns, self.lights] = readroadmap()
+        [self.roadmap, self.spawns, self.lights, self.height] = readroadmap()
+        self.width = self.height
+        self.grid = MultiGrid(self.width, self.height, True)
         self.running = True
 
         for light in self.lights:
             location = self.lights[light]
-            xlocation = width-1-int(location[0])
-            ylocation = height-1-int(location[1])
+            xlocation = self.width-1-int(location[0])
+            ylocation = self.height-1-int(location[1])
             trafficlight = TrafficLight(NumberOfAgents, self,"red")
             NumberOfAgents += 1
             self.schedule.add(trafficlight)
@@ -55,8 +56,8 @@ class Intersection(Model):
         for spawn in self.spawns:
             direction = spawn[1]
             location = self.spawns[spawn]
-            xlocation = width-1-int(location[0])
-            ylocation = height-1-int(location[1])
+            xlocation = self.width-1-int(location[0])
+            ylocation = self.height-1-int(location[1])
             car = CarAgent(NumberOfAgents, self, 1, direction,[xlocation, ylocation])
             NumberOfAgents += 1
             self.schedule.add(car)

@@ -1,11 +1,16 @@
 from Model import *
+from mesa import Model
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
-grid = CanvasGrid(agent_portrayal, 10, 10, 500, 500)
-server = ModularServer(Intersection,
+
+Intersectionmodel = Intersection
+
+
+grid = CanvasGrid(agent_portrayal, Intersectionmodel().width, Intersectionmodel().height, 500, 500)
+server = ModularServer(Intersectionmodel,
                        [grid],
-                       "Intersection",
-                       {"width":10, "height":10})
+                       "Intersectionmodel"
+                       )
 server.port = 8521 # The default
 server.launch()

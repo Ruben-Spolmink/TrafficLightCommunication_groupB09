@@ -2,6 +2,7 @@ import random
 from mesa import Agent, Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+import numpy as np
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
@@ -12,7 +13,9 @@ spawnchance = 3 #this should be an parameter in model interface
 NumberOfAgents = 0
 
 
-def readroadmap(): #needs to correctly read in roadmapfile
+
+
+def readroadmap():
     filepath = 'Generatedmap.txt'
     roadmap = []
     spawns = []
@@ -20,6 +23,13 @@ def readroadmap(): #needs to correctly read in roadmapfile
     run = 0
     with open(filepath, 'r') as roadmapfile:
         text = roadmapfile.readlines()
+        header = text[0:4]
+        info = header[0].split(",")
+        cellsperlane = int(info[0].strip())
+        gridsize = int(info[1].strip())
+        streetlength = int(info[2].strip())
+        intersections = int(info[3].strip())
+        text = text[4:]
         height = (len(text[0].split(",")))
         for y, line in enumerate(text):
             road = line.strip().split(',')
@@ -29,24 +39,28 @@ def readroadmap(): #needs to correctly read in roadmapfile
                     spawns.append([[x, y], tile])
                 if tile.startswith("T"):
                     lights.append([[x, y], tile])
-                    run +=1
-    return roadmap, spawns, lights, height
+                    run += 1
+    return roadmap, spawns, lights, height, cellsperlane
 
 
 class Intersection(Model):
-    def __init__(self): #should change so height and widht are same as Generatedmap
+    def __init__(self):
         global NumberOfAgents
         self.schedule = RandomActivation(self)
-        [self.roadmap, self.spawns, self.lights, self.height] = readroadmap()
+        [self.roadmap, self.spawns, self.lights, self.height, self.cellsperlane] = readroadmap()
         self.width = self.height
         self.grid = MultiGrid(self.width, self.height, True)
         self.running = True
+        self.tlightmatrix = np.empty((len(self.lights), len(self.lights)))
+        self.tlightmatrix[:] = np.nan
+        self.trafficlightlist = []
 
-        for light in self.lights:
+        for i, light in enumerate(self.lights):
             location = light[0]
             xlocation = int(location[0])
             ylocation = self.height-1-int(location[1])
-            trafficlight = TrafficLight(NumberOfAgents, self,"red")
+            trafficlight = TrafficLight(f"{i},{xlocation},{ylocation},{light[1][1:3]}", self,"red")
+            self.trafficlightlist.append(f"{i},{xlocation},{ylocation},{light[1][1:3]}")
             NumberOfAgents += 1
             self.schedule.add(trafficlight)
             self.grid.place_agent(trafficlight, (xlocation, ylocation))
@@ -64,12 +78,21 @@ class Intersection(Model):
             self.grid.place_agent(car, (xlocation, ylocation))
             print("placed_car")
 
+        self.tlightmatrix = self.lighttransfermatrix()
+
+    def lighttransfermatrix(self):
+        for agent in self.trafficlightlist:
+            # determine which traffic lights go where
+            # replace self.tlightmatrix [from,to]'s with 0 in that case
+            pass
+
+
+
     def step(self):
         global spawnchance
         global NumberOfAgents
         for spawn in self.spawns:
             if random.randint(0, 100) < spawnchance:
-                # if it is possible to spawn a car (NEEDS TO BE IMPLEMENTED)
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height-1-int(location[1])
@@ -79,3 +102,4 @@ class Intersection(Model):
                 self.schedule.add(car)
                 self.grid.place_agent(car, (xlocation, ylocation))
         self.schedule.step()
+

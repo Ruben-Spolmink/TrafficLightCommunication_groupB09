@@ -211,6 +211,13 @@ def createspawns(map, gridsize, streetlength, intersections):
 
     return map
 
+def createheader(map, gridsize, streetlength, intersections):
+    cellsperlane = 300/gridsize
+    map.insert(0, f"cellsperlane = {cellsperlane}")
+    map.insert(1, f"gridsize = {gridsize}")
+    map.insert(2, f"streetlength = {streetlength}")
+    map.insert(3, f"intersections = {intersections}")
+    return map
 
 if len(sys.argv) == 4:
     gridsize = int(sys.argv[1])
@@ -222,6 +229,7 @@ else:
     intersections = 1
 map = generatemap(gridsize, streetlength, intersections)
 map = createspawns(map, gridsize, streetlength, intersections)
+map = createheader(map, gridsize, streetlength, intersections)
 with open("Generatedmap.txt", "w") as mapfile:
     for row in map:
         for element in row:

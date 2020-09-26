@@ -24,11 +24,10 @@ def readroadmap():
     with open(filepath, 'r') as roadmapfile:
         text = roadmapfile.readlines()
         header = text[0:4]
-        info = header[0].split(",")
-        cellsperlane = int(info[0].strip())
-        gridsize = int(info[1].strip())
-        streetlength = int(info[2].strip())
-        intersections = int(info[3].strip())
+        cellsperlane = int(float(header[0].split("=")[1].strip()))
+        gridsize = int(float(header[1].split("=")[1].strip()))
+        streetlength = int(float(header[2].split("=")[1].strip()))
+        intersections = int(float(header[3].split("=")[1].strip()))
         text = text[4:]
         height = (len(text[0].split(",")))
         for y, line in enumerate(text):

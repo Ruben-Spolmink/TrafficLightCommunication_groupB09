@@ -52,20 +52,19 @@ def generatepattern(streetlength, gridsize):
     for j in range(cellsperlane):
         lastrow.append("TSL,")
     for j in range(cellsperlane):
-        lastrow.append("TNL,")
+        lastrow.append("NL,")
     for j in range(cellsperlane):
-        lastrow.append("TND,")
+        lastrow.append("ND,")
     for j in range(cellsperlane):
-        lastrow.append("TNR,")
+        lastrow.append("NR,")
     for j in range(cellsperstreet):
         lastrow.append("X,")
     pattern.append(lastrow)
     # Middle part
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet-1):
+        for j in range(cellsperstreet):
             row.append("WR,")
-        row.append("TWR,")
         for j in range(6*cellsperlane):
             row.append("O,")
         row.append("TWR,")
@@ -74,9 +73,8 @@ def generatepattern(streetlength, gridsize):
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet-1):
+        for j in range(cellsperstreet):
             row.append("WD,")
-        row.append("TWD,")
         for j in range(6*cellsperlane):
             row.append("O,")
         row.append("TWD,")
@@ -85,9 +83,8 @@ def generatepattern(streetlength, gridsize):
         pattern.append(row)
     for i in range(cellsperlane):
         row = []
-        for j in range(cellsperstreet-1):
+        for j in range(cellsperstreet):
             row.append("WL,")
-        row.append("TWL,")
         for j in range(6*cellsperlane):
             row.append("O,")
         row.append("TWL,")
@@ -101,8 +98,7 @@ def generatepattern(streetlength, gridsize):
         row.append("TEL,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        row.append("TEL,")
-        for j in range(cellsperstreet-1):
+        for j in range(cellsperstreet):
             row.append("EL,")
         pattern.append(row)
     for i in range(cellsperlane):
@@ -112,8 +108,7 @@ def generatepattern(streetlength, gridsize):
         row.append("TED,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        row.append("TED,")
-        for j in range(cellsperstreet-1):
+        for j in range(cellsperstreet):
             row.append("ED,")
         pattern.append(row)
     for i in range(cellsperlane):
@@ -123,8 +118,7 @@ def generatepattern(streetlength, gridsize):
         row.append("TER,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        row.append("TER,")
-        for j in range(cellsperstreet-1):
+        for j in range(cellsperstreet):
             row.append("ER,")
         pattern.append(row)
     # Lower part
@@ -132,11 +126,11 @@ def generatepattern(streetlength, gridsize):
     for j in range(cellsperstreet):
         firstrow.append("X,")
     for j in range(cellsperlane):
-        firstrow.append("TSR,")
+        firstrow.append("SR,")
     for j in range(cellsperlane):
-        firstrow.append("TSD,")
+        firstrow.append("SD,")
     for j in range(cellsperlane):
-        firstrow.append("TSL,")
+        firstrow.append("SL,")
     for j in range(cellsperlane):
         firstrow.append("TNL,")
     for j in range(cellsperlane):

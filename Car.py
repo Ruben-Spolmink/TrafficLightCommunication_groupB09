@@ -2,12 +2,14 @@ from mesa import Agent, Model
 
 
 class CarAgent(Agent):
-    def __init__(self, name, model, speed, direction, pos, lane):
+    def __init__(self, name, model, speed, direction, pos, lane, blok, route):
         super().__init__(name, model)
         self.speed = speed
         self.direction = direction
         self.pos = pos
         self.lane = lane
+        self.blok = blok
+        self.route = route
 
     def move(self):
         if(self.direction == "N"):

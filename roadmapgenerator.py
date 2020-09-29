@@ -1,7 +1,7 @@
 import math
 import sys
 import copy
-
+import re
 # Generate roadmap
 # Call as follows: roadmapgenerator.py gridsize, streetlength, intersections
 # gridsize is the size of a cell in cm. e.g. 10 means the cells are 10x10 cm
@@ -46,11 +46,11 @@ def generatepattern(streetlength, gridsize):
     for j in range(cellsperstreet):
         lastrow.append("X,")
     for j in range(cellsperlane):
-        lastrow.append("TSR,")
+        lastrow.append("TSR0,")
     for j in range(cellsperlane):
-        lastrow.append("TSD,")
+        lastrow.append("TSD0,")
     for j in range(cellsperlane):
-        lastrow.append("TSL,")
+        lastrow.append("TSL0,")
     for j in range(cellsperlane):
         lastrow.append("NL,")
     for j in range(cellsperlane):
@@ -67,7 +67,7 @@ def generatepattern(streetlength, gridsize):
             row.append("WR,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        row.append("TWR,")
+        row.append("TWR0,")
         for j in range(cellsperstreet-1):
             row.append("WR,")
         pattern.append(row)
@@ -77,7 +77,7 @@ def generatepattern(streetlength, gridsize):
             row.append("WD,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        row.append("TWD,")
+        row.append("TWD0,")
         for j in range(cellsperstreet-1):
             row.append("WD,")
         pattern.append(row)
@@ -87,7 +87,7 @@ def generatepattern(streetlength, gridsize):
             row.append("WL,")
         for j in range(6*cellsperlane):
             row.append("O,")
-        row.append("TWL,")
+        row.append("TWL0,")
         for j in range(cellsperstreet-1):
             row.append("WL,")
         pattern.append(row)
@@ -95,7 +95,7 @@ def generatepattern(streetlength, gridsize):
         row = []
         for j in range(cellsperstreet-1):
             row.append("EL,")
-        row.append("TEL,")
+        row.append("TEL0,")
         for j in range(6*cellsperlane):
             row.append("O,")
         for j in range(cellsperstreet):
@@ -105,7 +105,7 @@ def generatepattern(streetlength, gridsize):
         row = []
         for j in range(cellsperstreet-1):
             row.append("ED,")
-        row.append("TED,")
+        row.append("TED0,")
         for j in range(6*cellsperlane):
             row.append("O,")
         for j in range(cellsperstreet):
@@ -115,7 +115,7 @@ def generatepattern(streetlength, gridsize):
         row = []
         for j in range(cellsperstreet-1):
             row.append("ER,")
-        row.append("TER,")
+        row.append("TER0,")
         for j in range(6*cellsperlane):
             row.append("O,")
         for j in range(cellsperstreet):
@@ -132,11 +132,11 @@ def generatepattern(streetlength, gridsize):
     for j in range(cellsperlane):
         firstrow.append("SL,")
     for j in range(cellsperlane):
-        firstrow.append("TNL,")
+        firstrow.append("TNL0,")
     for j in range(cellsperlane):
-        firstrow.append("TND,")
+        firstrow.append("TND0,")
     for j in range(cellsperlane):
-        firstrow.append("TNR,")
+        firstrow.append("TNR0,")
     for j in range(cellsperstreet):
         firstrow.append("X,")
     pattern.append(firstrow)
@@ -175,16 +175,25 @@ def generatemap(gridsize, streetlength, intersections):
     [pattern, height, width] = generatepattern(streetlength, gridsize)
     print("Pattern created")
     # Expand rows
+
     for j, row in enumerate(pattern):
-        ogrow = row
+        ogrow = copy.deepcopy(row)
         for i in range(int(math.sqrt(intersections))-1):
+            for k, element in enumerate(ogrow):
+                if "0" in element:
+                    ogrow[k] = element[:-2] + f"{i+1},"
             pattern[j].extend(ogrow)
     print("Rows extended")
     # Expand columns
     ogpattern = copy.deepcopy(pattern)
     for i in range(int(math.sqrt(intersections))-1):
         for row in ogpattern:
-            pattern.append(row)
+            rowcopy = copy.deepcopy(row)
+            for k, element in enumerate(rowcopy):
+                if any(map(str.isdigit, element)):
+                    intnumber = element[-2]
+                    rowcopy[k] = element[:-2] + f"{int(intnumber)+int(math.sqrt(intersections))},"
+            pattern.append(rowcopy)
     print("Rows added")
     # Remove last 's
     for i in range(len(pattern)):

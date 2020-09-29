@@ -3,6 +3,7 @@ from mesa import Agent, Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 import numpy as np
+import math
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
@@ -11,6 +12,47 @@ from TrafficLight import TrafficLight
 from Portrayal import agent_portrayal
 spawnchance = 3 #this should be an parameter in model interface
 NumberOfAgents = 0
+
+# creates a np array where all 0's are connections that go from row to column
+def lightconnection(lightmatrix, trafficlightlist, roadmap, intersections):
+    for trafficlightfrom in trafficlightlist:
+        direction = trafficlightfrom[0][1:3]
+        intersection = int(trafficlightfrom[0][3])
+        if direction in ["NL", "WD", "SR"]:
+            goestointersection = intersection - 1
+            if goestointersection > -1 and (intersection % int(math.sqrt(intersections))) != 0:
+                for trafficlightto in trafficlightlist:
+                    direction = trafficlightto[0][1]
+                    intersection = int(trafficlightto[0][3])
+                    if intersection == goestointersection and direction == "W":
+                        print("updated")
+                        lightmatrix[int(trafficlightfrom[1]), int(trafficlightto[1])] = int(0)
+        if direction in ["EL", "ND", "WR"]:
+            goestointersection = intersection - int(math.sqrt(intersections))
+            if goestointersection >= 0:
+                for trafficlightto in trafficlightlist:
+                    direction = trafficlightto[0][1]
+                    intersection = int(trafficlightto[0][3])
+                    if intersection == goestointersection and direction == "N":
+                        lightmatrix[int(trafficlightfrom[1]), int(trafficlightto[1])] = int(0)
+        if direction in ["SL", "ED", "NR"]:
+            goestointersection = intersection + 1
+            if goestointersection % int(math.sqrt(intersections)) != 0:
+                for trafficlightto in trafficlightlist:
+                    direction = trafficlightto[0][1]
+                    intersection = int(trafficlightto[0][3])
+                    if intersection == goestointersection and direction == "E":
+                        lightmatrix[int(trafficlightfrom[1]), int(trafficlightto[1])] = int(0)
+        if direction in ["WL", "SD", "ER"]:
+            goestointersection = intersection + int(math.sqrt(intersections))
+            if goestointersection < intersections:
+                for trafficlightto in trafficlightlist:
+                    direction = trafficlightto[0][1]
+                    intersection = int(trafficlightto[0][3])
+                    if intersection == goestointersection and direction == "S":
+                        print(trafficlightto)
+                        lightmatrix[int(trafficlightfrom[1]), int(trafficlightto[1])] = int(0)
+    return lightmatrix
 
 
 
@@ -30,6 +72,7 @@ def readroadmap():
         intersections = int(float(header[3].split("=")[1].strip()))
         text = text[4:]
         height = (len(text[0].split(",")))
+        numberoflights = 0
         for y, line in enumerate(text):
             road = line.strip().split(',')
             roadmap.append(road)
@@ -37,9 +80,10 @@ def readroadmap():
                 if tile.startswith("C"):
                     spawns.append([[x, y], tile])
                 if tile.startswith("T"):
+                    numberoflights += 1
                     lights.append([[x, y], tile])
                     run += 1
-    return roadmap, spawns, lights, height, cellsperlane
+    return roadmap, spawns, lights, height, cellsperlane, intersections
 
 
 class Intersection(Model):
@@ -47,7 +91,7 @@ class Intersection(Model):
     def __init__(self):
         global NumberOfAgents
         self.schedule = RandomActivation(self)
-        [self.roadmap, self.spawns, self.lights, self.height, self.cellsperlane] = readroadmap()
+        [self.roadmap, self.spawns, self.lights, self.height, self.cellsperlane, intersections] = readroadmap()
         self.width = self.height
         self.grid = MultiGrid(self.width, self.height, True)
         self.running = True
@@ -62,11 +106,14 @@ class Intersection(Model):
             xlocation = int(location[0])
             ylocation = self.height-1-int(location[1])
             trafficlight = TrafficLight(f"{i},{xlocation},{ylocation},{light[1][1:3]}", self,"red")
-            self.trafficlightlist.append(f"{i},{xlocation},{ylocation},{light[1][1:3]}")
+            self.trafficlightlist.append([light[1], i])
             NumberOfAgents += 1
             self.schedule.add(trafficlight)
             self.grid.place_agent(trafficlight, (xlocation, ylocation))
             print("placed_traffic_agent")
+
+        self.tlightmatrix = lightconnection(self.tlightmatrix, self.trafficlightlist, self.roadmap, intersections)
+        np.savetxt('data.csv', self.tlightmatrix, delimiter=',')
 
         for spawn in self.spawns:
             self.direction = spawn[1][1]
@@ -98,13 +145,6 @@ class Intersection(Model):
             self.grid.place_agent(car, (xlocation, ylocation))
             print("placed_car")
 
-        self.tlightmatrix = self.lighttransfermatrix()
-
-    def lighttransfermatrix(self):
-        for agent in self.trafficlightlist:
-            # determine which traffic lights go where
-            # replace self.tlightmatrix [from,to]'s with 0 in that case
-            pass
 
 
     def generateRoute(self,direction,blok,n_intersections):

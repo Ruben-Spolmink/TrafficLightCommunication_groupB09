@@ -44,7 +44,6 @@ class CarAgent(Agent):
                         if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
-                            print(f"trafficcolor:{color}")
                             break
         if self.direction == "W":
             for i in range(int(self.model.streetlength/self.model.gridsize)-1):
@@ -55,7 +54,6 @@ class CarAgent(Agent):
                         if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
-                            print(f"trafficcolor:{color}")
                             break
         if self.direction == "N":
             for i in range(int(self.model.streetlength/self.model.gridsize)-1):
@@ -66,7 +64,6 @@ class CarAgent(Agent):
                         if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
-                            print(f"trafficcolor:{color}")
                             break
         if self.direction == "S":
             for i in range(int(self.model.streetlength/self.model.gridsize) -1):

@@ -2,6 +2,9 @@ from model import *
 from Portrayal import agent_portrayal
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
+# windows code things 
+# import asyncio
+# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 Intersectionmodel = Intersection
 

@@ -12,6 +12,16 @@ class TrafficLightAgent(Agent):
         self.direction = direction
 
     def step(self):
+        carcount = self.carsinfront()
+        self.model.tlightmatrix[self.id, :][self.model.tlightmatrix[self.id, :] >= 0] = carcount/3
+        print(self.model.tlightmatrix)
+        if random.randint(0, 100) < 10:
+            if self.trafficColor == "red":
+                self.trafficColor = "green"
+            else:
+                self.trafficColor = "red"
+
+    def carsinfront(self):
         infront = 0
         if self.direction == "N":
             for i in range(int(self.model.streetlength / self.model.gridsize)):
@@ -26,7 +36,6 @@ class TrafficLightAgent(Agent):
                     gridcoordinates = (self.pos[0] - i, self.pos[1])
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     infront = infront + len(agents)
-
         if self.direction == "S":
             for i in range(int(self.model.streetlength / self.model.gridsize)):
                 if not self.model.grid.out_of_bounds((self.pos[0], self.pos[1] + i)):
@@ -40,11 +49,4 @@ class TrafficLightAgent(Agent):
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     infront = infront + len(agents)
         np.set_printoptions(threshold=np.inf)
-        infront = infront - 1 # traffic light counts itself
-        self.model.tlightmatrix[self.id, :][self.model.tlightmatrix[self.id, :] >= 0] = infront/3
-        print(self.model.tlightmatrix)
-        if random.randint(0, 100) < 10:
-            if self.trafficColor == "red":
-                self.trafficColor = "green"
-            else:
-                self.trafficColor = "red"
+        return infront - 1 # traffic light counts itself

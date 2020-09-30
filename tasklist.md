@@ -1,7 +1,7 @@
 # Tasklist
 - [ ] Carspawns - check whether it is possible to spawn a car (model.py far enough from others)
 - [ ] Trafficlight detecting cars - trafficlights should be able to detect and count cars in their lane.
-- [ ] trafficlight communication - should be able to communicate the amount of cars and the direction it has to a board or to the correct light
+- [x] trafficlight communication - should be able to communicate the amount of cars and the direction it has to a board or to the correct light
 - [X] car route - cars should be spawned with a "randomized" route that they follow
 - [ ] car characteristics - at first hard coded, but later randomized. car should have values for the speed/accelaration/etc one idea is that grid is translated to me
 - [ ] car pollution - adding a way for a car to produce pollution bases on car characteristics and speed
@@ -12,3 +12,6 @@
 - [ ] graphs - the data that is being collected should be visible in real time in a form of graph
 - [ ] legend - a small part in the webpage should contain information on what is going on screen
 - [ ] batch running - for cross fold validation we should be able to run the same test multiple times in a row.
+- [ ] standard traffic light cycles
+- [ ] headless mode
+- [x] cars can see traffic lights

@@ -1,4 +1,5 @@
 from mesa import Agent, Model
+import random
 
 class TrafficLight(Agent):
     def __init__(self, name, model,trafficColor):
@@ -6,7 +7,8 @@ class TrafficLight(Agent):
         self.trafficColor = "red"
 
     def step(self):
-        if(self.trafficColor == "red"):
-            self.trafficColor = "green"
-        else:
-            self.trafficColor = "red"
+        if random.randint(0, 100) < 10:
+            if self.trafficColor == "red":
+                self.trafficColor = "green"
+            else:
+                self.trafficColor = "red"

@@ -11,5 +11,5 @@ server = ModularServer(Intersectionmodel,
                        [grid],
                        "Intersectionmodel"
                        )
-server.port = 8520 # The default
+server.port = 8521  # The default
 server.launch()

@@ -15,7 +15,7 @@ NumberOfAgents = 0
 
 
 # creates a np array where all 0's are connections that go from row to column
-def lightconnection(lightmatrix, trafficlightlist, roadmap, intersections):
+def lightconnection(lightmatrix, trafficlightlist, intersections):
     for trafficlightfrom in trafficlightlist:
         direction = trafficlightfrom[0][1:3]
         intersection = int(trafficlightfrom[0][3])
@@ -109,7 +109,7 @@ class Intersection(Model):
             self.schedule.add(trafficlight)
             self.grid.place_agent(trafficlight, (xlocation, ylocation))
 
-        self.tlightmatrix = lightconnection(self.tlightmatrix, self.trafficlightlist, self.roadmap, intersections)
+        self.tlightmatrix = lightconnection(self.tlightmatrix, self.trafficlightlist, intersections)
         np.savetxt('data.csv', self.tlightmatrix, delimiter=',')
 
         # for spawn in self.spawns:
@@ -209,7 +209,7 @@ class Intersection(Model):
                     #we can assume that the car is on the right half of the screen
                         self.blok = "D"
                 self.route = self.generateRoute(direction, self.blok, random.randint(0,4))
-                car = CarAgent(NumberOfAgents, self, 1, direction, [xlocation, ylocation], self.blok,
+                car = CarAgent(NumberOfAgents, self, 50, direction, [xlocation, ylocation], self.blok,
                                self.route, self.streetlength)
                 NumberOfAgents += 1
                 self.schedule.add(car)

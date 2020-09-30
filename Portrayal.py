@@ -16,10 +16,9 @@ def agent_portrayal(agent):
         portrayal["Layer"] = "0"
         return portrayal
 
-
     elif isinstance(agent, TrafficLightAgent):
         portrayal["Shape"] = "rect"
-        if(agent.trafficColor == "red"):
+        if agent.trafficColor == "red":
             portrayal["Color"] = "red"
         else:
             portrayal["Color"] = "green"

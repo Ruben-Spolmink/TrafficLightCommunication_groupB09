@@ -13,7 +13,9 @@ class TrafficLightAgent(Agent):
 
     def step(self):
         carcount = self.carsinfront()
-        self.model.tlightmatrix[self.id, :][self.model.tlightmatrix[self.id, :] >= 0] = carcount/3
+        self.model.tlightmatrix[self.id, :][
+            self.model.tlightmatrix[self.id, :] >= 0
+        ] = (carcount / 3)
         print(self.model.tlightmatrix)
         if random.randint(0, 100) < 10:
             if self.trafficColor == "red":
@@ -49,4 +51,4 @@ class TrafficLightAgent(Agent):
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     infront = infront + len(agents)
         np.set_printoptions(threshold=np.inf)
-        return infront - 1 # traffic light counts itself
+        return infront - 1  # traffic light counts itself

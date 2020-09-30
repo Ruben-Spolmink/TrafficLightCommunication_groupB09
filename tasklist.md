@@ -1,6 +1,6 @@
 # Tasklist
 - [ ] Carspawns - check whether it is possible to spawn a car (model.py far enough from others)
-- [ ] Trafficlight detecting cars - trafficlights should be able to detect and count cars in their lane.
+- [x] Trafficlight detecting cars - trafficlights should be able to detect and count cars in their lane.
 - [x] trafficlight communication - should be able to communicate the amount of cars and the direction it has to a board or to the correct light
 - [X] car route - cars should be spawned with a "randomized" route that they follow
 - [ ] car characteristics - at first hard coded, but later randomized. car should have values for the speed/accelaration/etc one idea is that grid is translated to me

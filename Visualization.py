@@ -1,7 +1,5 @@
-from Model import *
-from mesa import Model
-from mesa import Agent
-from TrafficLight import TrafficLightAgent
+from model import *
+from Portrayal import agent_portrayal
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
@@ -12,5 +10,5 @@ server = ModularServer(Intersectionmodel,
                        [grid],
                        "Intersectionmodel"
                        )
-server.port = 8520  # The default
+server.port = 8522  # The default
 server.launch()

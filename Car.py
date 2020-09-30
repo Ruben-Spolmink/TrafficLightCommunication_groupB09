@@ -1,13 +1,13 @@
 from mesa import Agent, Model
+import model
 from TrafficLight import TrafficLightAgent
-import Model
 
 
 class CarAgent(Agent):
-    def __init__(self, name, model, speed, direction, pos, blok, route, streetlength):
-        super().__init__(name, model)
+    def __init__(self, name, intersectionmodel, speed, direction, pos, blok, route, streetlength):
+        super().__init__(name, intersectionmodel)
+        self.model = intersectionmodel
         self.speed = speed
-        self.model = model
         self.direction = direction
         self.pos = pos
         self.blok = blok
@@ -15,13 +15,13 @@ class CarAgent(Agent):
 
     def move(self):
         if not self.hasredlight()[0]:
-            if(self.direction == "N"):
+            if self.direction == "N":
                 new_position = (self.pos[0], self.pos[1]+1)
-            if(self.direction == "E"):
+            if self.direction == "E":
                 new_position = (self.pos[0]+1, self.pos[1])
-            if(self.direction == "S"):
+            if self.direction == "S":
                 new_position = (self.pos[0], self.pos[1]-1)
-            if(self.direction == "W"):
+            if self.direction == "W":
                 new_position = (self.pos[0]-1, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
                 self.model.grid.remove_agent(self)

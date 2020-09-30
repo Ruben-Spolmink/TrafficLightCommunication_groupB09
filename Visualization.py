@@ -1,12 +1,14 @@
 from Model import *
 from mesa import Model
+from mesa import Agent
+from TrafficLight import TrafficLightAgent
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
 
 Intersectionmodel = Intersection
 
-grid = CanvasGrid(agent_portrayal, Intersectionmodel().width, Intersectionmodel().height, 500, 500)
+grid = CanvasGrid(agent_portrayal, Intersectionmodel().width, Intersectionmodel().height, 1000, 1000)
 server = ModularServer(Intersectionmodel,
                        [grid],
                        "Intersectionmodel"

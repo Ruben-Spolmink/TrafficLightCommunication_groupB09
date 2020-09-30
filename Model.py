@@ -4,12 +4,12 @@ from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 import numpy as np
 import math
+from Portrayal import agent_portrayal
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
 from Car import CarAgent
-from TrafficLight import TrafficLight
-from Portrayal import agent_portrayal
+from TrafficLight import TrafficLightAgent
 spawnchance = 3 #this should be an parameter in model interface
 NumberOfAgents = 0
 
@@ -104,7 +104,7 @@ class Intersection(Model):
             location = light[0]
             xlocation = int(location[0])
             ylocation = self.height-1-int(location[1])
-            trafficlight = TrafficLight(f"{i},{xlocation},{ylocation},{light[1][1:3]}", self,"red")
+            trafficlight = TrafficLightAgent(f"{i},{xlocation},{ylocation},{light[1][1:3]}", self,"red")
             self.trafficlightlist.append([light[1], i])
             self.schedule.add(trafficlight)
             self.grid.place_agent(trafficlight, (xlocation, ylocation))

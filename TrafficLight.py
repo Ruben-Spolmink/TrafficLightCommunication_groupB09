@@ -1,7 +1,7 @@
 from mesa import Agent, Model
 import random
 
-class TrafficLight(Agent):
+class TrafficLightAgent(Agent):
     def __init__(self, name, model,trafficColor):
         super().__init__(name, model)
         self.trafficColor = "red"

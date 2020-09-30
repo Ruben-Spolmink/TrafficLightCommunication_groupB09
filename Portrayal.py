@@ -1,5 +1,5 @@
 from Car import CarAgent
-from TrafficLight import TrafficLight
+from TrafficLight import TrafficLightAgent
 
 
 def agent_portrayal(agent):
@@ -12,13 +12,12 @@ def agent_portrayal(agent):
         "Filled": "true",
     }
     if isinstance(agent, CarAgent):
-        portrayal["Color"] = "blue"
-        portrayal["r"] = "0.5"
+        portrayal["Shape"] = "car.png"
         portrayal["Layer"] = "0"
         return portrayal
 
 
-    elif isinstance(agent, TrafficLight):
+    elif isinstance(agent, TrafficLightAgent):
         portrayal["Shape"] = "rect"
         if(agent.trafficColor == "red"):
             portrayal["Color"] = "red"

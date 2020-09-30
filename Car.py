@@ -1,5 +1,5 @@
 from mesa import Agent, Model
-import TrafficLight
+from TrafficLight import TrafficLightAgent
 import Model
 
 
@@ -41,7 +41,7 @@ class CarAgent(Agent):
                     gridcoordinates = (self.pos[0] + i, self.pos[1])
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     for agent in agents:
-                        if isinstance(agent, TrafficLight.TrafficLight):
+                        if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
                             print(f"trafficcolor:{color}")
@@ -52,7 +52,7 @@ class CarAgent(Agent):
                     gridcoordinates = (self.pos[0] - i, self.pos[1])
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     for agent in agents:
-                        if isinstance(agent, TrafficLight.TrafficLight):
+                        if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
                             print(f"trafficcolor:{color}")
@@ -63,7 +63,7 @@ class CarAgent(Agent):
                     gridcoordinates = (self.pos[0], self.pos[1] + i)
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     for agent in agents:
-                        if isinstance(agent, TrafficLight.TrafficLight):
+                        if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
                             print(f"trafficcolor:{color}")
@@ -74,7 +74,7 @@ class CarAgent(Agent):
                     gridcoordinates = (self.pos[0], self.pos[1] - i)
                     agents = self.model.grid.get_cell_list_contents(gridcoordinates)
                     for agent in agents:
-                        if isinstance(agent, TrafficLight.TrafficLight):
+                        if isinstance(agent, TrafficLightAgent):
                             color = agent.trafficColor
                             distance = i
                             break

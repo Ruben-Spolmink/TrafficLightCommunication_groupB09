@@ -1,26 +1,27 @@
 from mesa import Agent, Model
 import random
+import model
 import numpy as np
 
 
 class TrafficLightAgent(Agent):
-    def __init__(self, name, intersectionmodel, trafficColor, direction, number):
+    def __init__(self, name, intersectionmodel, trafficColor, direction, lane, number):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
         self.id = number
+        self.lane = lane
         self.trafficColor = trafficColor
         self.direction = direction
+        self.cycletime = 30
 
     def step(self):
         carcount = self.carsinfront()
         self.model.tlightmatrix[self.id, :][
             self.model.tlightmatrix[self.id, :] >= 0
         ] = (carcount / 3)
-        if random.randint(0, 100) < 10:
-            if self.trafficColor == "red":
-                self.trafficColor = "green"
-            else:
-                self.trafficColor = "red"
+        time = self.model.schedule.time
+        self.changecolor(time, self.direction, self.lane, self.cycletime)
+
 
     def carsinfront(self):
         infront = 0
@@ -51,3 +52,20 @@ class TrafficLightAgent(Agent):
                     infront = infront + len(agents)
         np.set_printoptions(threshold=np.inf)
         return infront - 1  # traffic light counts itself
+
+    def changecolor(self, time, direction, lane, cycletime):
+        combi = direction+lane
+        timeperiod = time % (cycletime*4)
+        self.trafficColor = "red"
+        if 6 <= timeperiod <= cycletime-1 and combi in self.model.lightcombinations[0]:
+            self.trafficColor = "green"
+        if cycletime + 6 <= timeperiod <= cycletime*2-1 and combi in self.model.lightcombinations[1]:
+            self.trafficColor = "green"
+        if cycletime * 2 + 6 <= timeperiod <= cycletime*3-1 and combi in self.model.lightcombinations[2]:
+            self.trafficColor = "green"
+        if cycletime * 3 + 6 <= timeperiod <= cycletime*4-1 and combi in self.model.lightcombinations[3]:
+            self.trafficColor = "green"
+
+
+
+

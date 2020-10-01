@@ -123,14 +123,16 @@ class Intersection(Model):
         self.tlightmatrix[:] = np.nan
         self.trafficlightlist = []
         self.carID = 0
-
+        self.lightcombinations = [["SR", "SD", "SL", "WR"], ["ER", "ED", "EL", "SR"],
+                                  ["NR", "ND", "NL", "ER"], ["WR", "WD", "WL", "NR"]]
         for i, light in enumerate(self.lights):
             direction = light[1][1]
+            lane = light[1][2]
             location = light[0]
             xlocation = int(location[0])
             ylocation = self.height - 1 - int(location[1])
             trafficlight = TrafficLightAgent(
-                f"{xlocation},{ylocation},{light[1][1:3]}", self, "red", direction, i
+                f"{xlocation},{ylocation},{light[1][1:3]}", self, "red", direction, lane, i
             )
             self.trafficlightlist.append([light[1], i])
             self.schedule.add(trafficlight)

@@ -18,7 +18,7 @@ class CarAgent(Agent):
         self.turn = ""
 
     def move(self, direction):
-        if not self.hasredlight()[0]:
+        if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
             if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + 1)
@@ -43,7 +43,7 @@ class CarAgent(Agent):
                     )  # all clear move to cell
 
     def move_queue(self):
-        if not self.hasredlight()[0]:
+        if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
             current_move = self.queue.pop(0)
             if current_move == "UP":
                 self.move(self.direction)
@@ -104,9 +104,9 @@ class CarAgent(Agent):
                 self.queue.append("UP")
 
     def hasredlight(self):
-        distance = 0
+        distance = 1
         hasredlight = False
-        color = " "
+        color = "green"
         if self.direction == "E":
             for i in range(int(self.model.streetlength / self.model.gridsize) - 1):
                 if not self.model.grid.out_of_bounds((self.pos[0] + i, self.pos[1])):
@@ -155,7 +155,7 @@ class CarAgent(Agent):
         cell_contents = self.model.grid.get_cell_list_contents(self.pos)
         if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):
             self.fill_queue()
-        if(self.queue == []):
+        if not self.queue:
             self.move(self.direction)
         else:
             self.move_queue()

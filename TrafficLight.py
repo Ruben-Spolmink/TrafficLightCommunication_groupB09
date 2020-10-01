@@ -16,7 +16,6 @@ class TrafficLightAgent(Agent):
         self.model.tlightmatrix[self.id, :][
             self.model.tlightmatrix[self.id, :] >= 0
         ] = (carcount / 3)
-        print(self.model.tlightmatrix)
         if random.randint(0, 100) < 10:
             if self.trafficColor == "red":
                 self.trafficColor = "green"

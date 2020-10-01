@@ -7,8 +7,8 @@ import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
 
-spawnchance = 3  # this should be an parameter in model interface
-NumberOfAgents = 0
+SPAWNCHANCE = 3  # this should be an parameter in model interface
+
 
 
 # creates a np array where all 0's are connections that go from row to column
@@ -122,8 +122,7 @@ class Intersection(Model):
         self.tlightmatrix = np.empty((len(self.lights), len(self.lights)))
         self.tlightmatrix[:] = np.nan
         self.trafficlightlist = []
-        self.blok = ""
-        self.route = []
+        self.carID = 0
 
         for i, light in enumerate(self.lights):
             direction = light[1][1]
@@ -142,137 +141,23 @@ class Intersection(Model):
         )
         np.savetxt("data.csv", self.tlightmatrix, delimiter=",")
 
-        # for spawn in self.spawns:
-        #     self.direction = spawn[1][1]
-        #     self.lane = spawn[1][2]
-        #     location = spawn[0]
-        #     xlocation = int(location[0])
-        #     ylocation = self.height-1-int(location[1])
-        #     if(ylocation < self.height/2):
-        #         # we can assume the car is placed on the bottom half the intersection
-        #         if(xlocation < self.width/2):
-        #             # we can assume that the car is placed on the left half of the screen
-        #             self.blok = "A"
-        #         else:
-        #             # the car is placed on the right half of the screen
-        #             self.blok = "B"
-        #     if(ylocation > self.height/2):
-        #         # we can assume the car is placed on the top half of the screen
-        #         if(xlocation < self.width/2):
-        #             # we can assume that the car is placed on the left half of the screen
-        #             self.blok = "C"
-        #         else:
-        #             # we can assume that the car is on the right half of the screen
-        #             self.blok = "D"
-        #
-        #     self.route = self.generateRoute(self.direction, self.blok, random.randint(0,4))
-        #     car = CarAgent(NumberOfAgents, self, 1, self.direction, [xlocation, ylocation], self.lane, self.blok,
-        #                    self.roadmap, self.route)
-        #     NumberOfAgents += 1
-        #     self.schedule.add(car)
-        #     self.grid.place_agent(car, (xlocation, ylocation))
-        #     print("placed_car")
-
-    def generateRoute(self, direction, blok, n_intersections):
-        route = []
-        # dictionary with options for direcitons when wanting to move to another intersection
-        route_stay = {
-            "A": ["N", "E"],
-            "B": ["W", "N"],
-            "C": ["S", "E"],
-            "D": ["S", "W"],
-        }
-        # dictionary with options for directions when leaving the instersecion
-        route_leave = {
-            "A": ["S", "W"],
-            "B": ["E", "S"],
-            "C": ["N", "W"],
-            "D": ["N", "E"],
-        }
-
-        calculation_dictornary = {
-            "A": {"N": "C", "E": "B"},
-            "B": {"W": "A", "N": "D"},
-            "C": {"S": "A", "E": "D"},
-            "D": {"S": "B", "W": "C"},
-        }
-
-        for i in range(n_intersections):
-            # start with a all the options enabled
-            options = ["N", "E", "S", "W"]
-            if direction in options:
-                options.remove(
-                    direction
-                )  # removes the direction the car came from since we cannot make u-turn
-            if (
-                i < n_intersections
-            ):  # check if we are leaving the intersecions or that we are going towards another intesection
-                for option in route_leave[blok]:
-                    if option in options:
-                        options.remove(
-                            option
-                        )  # if we want to go to the next intersection we remove the options where we leave the instersection
-            else:
-                for option in route_stay[blok]:
-                    if option in options:
-                        options.remove(
-                            option
-                        )  # if we want to leave the intersecions we remove the options where we stay on the intersecion
-            new_choice = random.choice(
-                options
-            )  # we pick a random option from the options that are left
-            route.append(new_choice)  # add the option to the route we take
-            direction = (
-                new_choice  # set direction as if we are in the next step of the route
-            )
-            if (
-                i < n_intersections
-            ):  # if we go to another intersecion we need to calculate the blok we are going to
-                blok = calculation_dictornary[blok][
-                    direction
-                ]  # add the intersection blok as if we are in the next intersecion
-        return route
-        # calculate where we end up if we add current blok plus the direction
-
     def step(self):
-        global spawnchance
-        global NumberOfAgents
         for spawn in self.spawns:
-            if random.randint(0, 100) < spawnchance:
+            if random.randint(0, 100) < SPAWNCHANCE:
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height - 1 - int(location[1])
                 direction = spawn[1][1]
-                if ylocation < self.height / 2:
-                    # we can assume the car is placed on the bottom half the intersection
-                    if xlocation < self.width / 2:
-                        # we can assume that the car is placed on the left half of the screen
-                        self.blok = "A"
-                    else:
-                        # the car is placed on the right half of the screen
-                        self.blok = "B"
-                if ylocation > self.height / 2:
-                    # we can assume the car is placed on the top half of the screen
-                    if xlocation < self.width / 2:
-                        # we can assume that the car is placed on the left half of the screen
-                        self.blok = "C"
-                    else:
-                        # we can assume that the car is on the right half of the screen
-                        self.blok = "D"
-                self.route = self.generateRoute(
-                    direction, self.blok, random.randint(0, 4)
-                )
+                lane = spawn[1][2]
                 car = CarAgent(
-                    NumberOfAgents,
+                    f"car{self.carID}",
                     self,
                     50,
-                    direction,
+                    direction, lane,
                     [xlocation, ylocation],
-                    self.blok,
-                    self.route,
                     self.streetlength,
                 )
-                NumberOfAgents += 1
+                self.carID += 1
                 self.schedule.add(car)
                 self.grid.place_agent(car, (xlocation, ylocation))
         self.schedule.step()

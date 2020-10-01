@@ -1,29 +1,32 @@
 from mesa import Agent, Model
 import model
 from TrafficLight import TrafficLightAgent
-
+import random
 
 class CarAgent(Agent):
     def __init__(
-        self, name, intersectionmodel, speed, direction, pos, blok, route, streetlength
+        self, name, intersectionmodel, speed, direction, lane, pos, streetlength
     ):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
         self.speed = speed
         self.direction = direction
         self.pos = pos
-        self.blok = blok
-        self.route = route
+        self.queue = []
+        self.lane = lane
+        self.swaplane = ""
+        self.turn = ""
 
-    def move(self):
+    def move(self, direction):
         if not self.hasredlight()[0]:
-            if self.direction == "N":
+
+            if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + 1)
-            if self.direction == "E":
+            if direction == "E":
                 new_position = (self.pos[0] + 1, self.pos[1])
-            if self.direction == "S":
+            if direction == "S":
                 new_position = (self.pos[0], self.pos[1] - 1)
-            if self.direction == "W":
+            if direction == "W":
                 new_position = (self.pos[0] - 1, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
                 self.model.grid.remove_agent(self)
@@ -38,6 +41,67 @@ class CarAgent(Agent):
                     self.model.grid.move_agent(
                         self, new_position
                     )  # all clear move to cell
+
+    def move_queue(self):
+        if not self.hasredlight()[0]:
+            current_move = self.queue.pop(0)
+            if current_move == "UP":
+                self.move(self.direction)
+            if current_move == "LEFT":
+                self.move(self.turn)
+            if current_move == "RIGHT":
+                self.move(self.turn)
+            if self.queue == []:
+                self.lane = self.swaplane
+                self.direction = self.turn
+
+    def fill_queue(self):
+        turn_left = {
+                    "N": "W",
+                    "E": "N",
+                    "S": "E",
+                    "W": "S"}
+
+        turn_right = {
+                    "N": "E",
+                    "E": "S",
+                    "S": "W",
+                    "W": "N"}
+
+        self.swaplane = random.choice(["L","D","R"])
+        if self.lane == "L":
+            self.turn = turn_left[self.direction]
+            if self.swaplane == "L":
+                for i in range(4):
+                    self.queue.append("UP")
+            if self.swaplane == "D":
+                for i in range(5):
+                    self.queue.append("UP")
+            if self.swaplane == "R":
+                for i in range(6):
+                    self.queue.append("UP")
+        if self.lane == "D":
+            self.turn = self.direction
+            if self.swaplane == "L":
+                for i in range(7):
+                    self.queue.append("UP")
+                self.queue.append("LEFT")
+            if self.swaplane == "D":
+                for i in range(7):
+                    self.queue.append("UP")
+            if self.swaplane == "R":
+                for i in range(7):
+                    self.queue.append("UP")
+        if self.lane == "R":
+            self.turn = turn_right[self.direction]
+            if self.swaplane == "L":
+                for i in range(3):
+                    self.queue.append("UP")
+            if self.swaplane == "D":
+                for i in range(2):
+                    self.queue.append("UP")
+            if self.swaplane == "R":
+                self.queue.append("UP")
 
     def hasredlight(self):
         distance = 0
@@ -88,5 +152,10 @@ class CarAgent(Agent):
         return hasredlight, distance
 
     def step(self):
-        # print("my position is " ,self.pos[0], self.pos[1])
-        self.move()
+        cell_contents = self.model.grid.get_cell_list_contents(self.pos)
+        if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):
+            self.fill_queue()
+        if(self.queue == []):
+            self.move(self.direction)
+        else:
+            self.move_queue()

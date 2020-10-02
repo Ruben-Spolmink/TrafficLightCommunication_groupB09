@@ -17,6 +17,7 @@ class CarAgent(Agent):
         self.swaplane = ""
         self.turn = ""
         self.qmove = False
+        self.succes = True
 
     def move(self, direction, qmove):
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
@@ -42,31 +43,43 @@ class CarAgent(Agent):
                     self.model.grid.move_agent(
                         self, new_position
                     )  # all clear move to cell
+                    self.succes = True
                 elif(qmove == True):
-                    return False
+                    self.succes = False
+                    print("can't move")
 
 
     def move_queue(self):
         templist = []
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
+            print("no red light")
             current_move = self.queue.pop(0)
             self.qmove = True
             if current_move == "UP":
-                if not(self.move(self.direction, self.qmove)) :
+                self.move(self.direction, self.qmove)
+                if not (self.succes) :
+                    print("extending list")
                     templist.append(current_move)
-                    templist.append(self.queue)
+                    templist.extend(self.queue)
                     self.queue = templist
+                    self.succes = True
             if current_move == "LEFT":
-                if not(self.move(self.direction, self.qmove)) :
+                self.move(self.direction, self.qmove)
+                if not (self.succes) :
                     templist.append(current_move)
-                    templist.append(self.queue)
+                    templist.extend(self.queue)
                     self.queue = templist
+                    self.succes = True
             if current_move == "RIGHT":
-                if not(self.move(self.direction, self.qmove)) :
+                self.move(self.direction, self.qmove)
+                if not (self.succes) :
                     templist.append(current_move)
-                    templist.append(self.queue)
+                    templist.extend(self.queue)
                     self.queue = templist
-            if self.queue == []:
+                    self.succes = True
+            print(self.queue)
+            if not self.queue:
+                print("swapping lane and direction")
                 self.lane = self.swaplane
                 self.direction = self.turn
 
@@ -169,7 +182,8 @@ class CarAgent(Agent):
     def step(self):
         cell_contents = self.model.grid.get_cell_list_contents(self.pos)
         if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):
-            self.fill_queue()
+            if not self.queue:
+                self.fill_queue()
         if not self.queue:
             self.qmove = False
             self.move(self.direction,self.qmove)

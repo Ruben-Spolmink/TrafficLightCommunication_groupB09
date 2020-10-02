@@ -101,6 +101,10 @@ def readroadmap():
 
 
 class Intersection(Model):
+    '''
+    Here the model is initialized
+    a map file is read to place the lanes, traffic lights and spawn points
+    '''
     def __init__(self):
         global NumberOfAgents
         self.schedule = RandomActivation(self)
@@ -144,6 +148,10 @@ class Intersection(Model):
         np.savetxt("data.csv", self.tlightmatrix, delimiter=",")
 
     def step(self):
+        '''
+        step function that will randomly place cars based on the spawn chance
+        and will visit all the agents to perform their step function
+        '''
         for spawn in self.spawns:
             if random.randint(0, 100) < SPAWNCHANCE:
                 location = spawn[0]

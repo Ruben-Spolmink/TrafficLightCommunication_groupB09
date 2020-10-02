@@ -3,6 +3,9 @@ from Portrayal import agent_portrayal
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 
+'''
+This file launches the server and the model
+'''
 Intersectionmodel = Intersection
 
 grid = CanvasGrid(

@@ -3,6 +3,9 @@ from TrafficLight import TrafficLightAgent
 
 
 def agent_portrayal(agent):
+    '''
+    This file contains the visual information visualization uses to generate the interactive map on the webpage
+    '''
     if agent is None:
         return
     portrayal = {

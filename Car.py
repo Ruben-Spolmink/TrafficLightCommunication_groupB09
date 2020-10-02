@@ -20,6 +20,10 @@ class CarAgent(Agent):
         self.succes = True
 
     def move(self, direction, qmove):
+        '''
+        movement for a car based on the direction the car is moving
+        in the case the move is a queue move a check is performed if the move was succesfull otherwise the move needs to be saved
+        '''
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
             if direction == "N":
@@ -50,40 +54,53 @@ class CarAgent(Agent):
 
 
     def move_queue(self):
+        '''
+        performing moves on basis of the queue. In the case that the move is not succesfull,
+        because the car is blocked by an oter car the move will be placed back at the front of the queue
+        '''
         templist = []
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
-            print("no red light")
             current_move = self.queue.pop(0)
-            self.qmove = True
+            self.qmove = True #now a q move is done instead of a normal move
+
+            #if the car needs to move straight
             if current_move == "UP":
                 self.move(self.direction, self.qmove)
-                if not (self.succes) :
-                    print("extending list")
+                if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
                     self.queue = templist
                     self.succes = True
+
+            #if the car needs to move left
             if current_move == "LEFT":
                 self.move(self.direction, self.qmove)
-                if not (self.succes) :
+                if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
                     self.queue = templist
                     self.succes = True
+
+            #if the car needs to take a move right
             if current_move == "RIGHT":
                 self.move(self.direction, self.qmove)
-                if not (self.succes) :
+                if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
                     self.queue = templist
                     self.succes = True
-            print(self.queue)
-            if not self.queue:
+
+            if not self.queue: #after the final move in the queue the new direciton and the new lane is set as the current direction and lane
                 print("swapping lane and direction")
                 self.lane = self.swaplane
                 self.direction = self.turn
 
     def fill_queue(self):
+        '''
+        This function fills a queue with moves the car needs to take to cross the intersection and get in the correct lane.
+        the turn left and right dicitonaries returns the correct direction the car is moving in after making the turn.
+        The car is driving in a lane that either goes letf, rightthrough or right. At the intersection the car will randomly decide which direction it wants to move after the intersection.
+        '''
         turn_left = {
                     "N": "W",
                     "E": "N",
@@ -96,7 +113,9 @@ class CarAgent(Agent):
                     "S": "W",
                     "W": "N"}
 
-        self.swaplane = random.choice(["L","D","R"])
+        self.swaplane = random.choice(["L","D","R"]) #picks a random lane where the car will move in after the intersection
+
+        #if the car is in the left lane set direction for a left turn
         if self.lane == "L":
             self.turn = turn_left[self.direction]
             if self.swaplane == "L":
@@ -108,6 +127,8 @@ class CarAgent(Agent):
             if self.swaplane == "R":
                 for i in range(6):
                     self.queue.append("UP")
+
+        #if the car is moving straight
         if self.lane == "D":
             self.turn = self.direction
             if self.swaplane == "L":
@@ -120,6 +141,8 @@ class CarAgent(Agent):
             if self.swaplane == "R":
                 for i in range(7):
                     self.queue.append("UP")
+
+        #if the car is in the right lane set the direciton to a right turn
         if self.lane == "R":
             self.turn = turn_right[self.direction]
             if self.swaplane == "L":
@@ -180,12 +203,18 @@ class CarAgent(Agent):
         return hasredlight, distance
 
     def step(self):
+        '''
+        there are two situations for the cars either the car is driving or the car is at the intersection
+        at the intersection a queue is filled with moves for a car and a new direcition is chosen.
+        '''
         cell_contents = self.model.grid.get_cell_list_contents(self.pos)
-        if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):
+        if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents): #a check if the car is at a traffic light or not
             if not self.queue:
                 self.fill_queue()
+
         if not self.queue:
-            self.qmove = False
+            self.qmove = False #wether the move is a normal move or a move from the queue
             self.move(self.direction,self.qmove)
+
         else:
             self.move_queue()

@@ -16,8 +16,9 @@ class CarAgent(Agent):
         self.lane = lane
         self.swaplane = ""
         self.turn = ""
+        self.qmove = False
 
-    def move(self, direction):
+    def move(self, direction, qmove):
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
             if direction == "N":
@@ -41,16 +42,30 @@ class CarAgent(Agent):
                     self.model.grid.move_agent(
                         self, new_position
                     )  # all clear move to cell
+                elif(qmove == True):
+                    return False
+
 
     def move_queue(self):
+        templist = []
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
             current_move = self.queue.pop(0)
+            self.qmove = True
             if current_move == "UP":
-                self.move(self.direction)
+                if not(self.move(self.direction, self.qmove)) :
+                    templist.append(current_move)
+                    templist.append(self.queue)
+                    self.queue = templist
             if current_move == "LEFT":
-                self.move(self.turn)
+                if not(self.move(self.direction, self.qmove)) :
+                    templist.append(current_move)
+                    templist.append(self.queue)
+                    self.queue = templist
             if current_move == "RIGHT":
-                self.move(self.turn)
+                if not(self.move(self.direction, self.qmove)) :
+                    templist.append(current_move)
+                    templist.append(self.queue)
+                    self.queue = templist
             if self.queue == []:
                 self.lane = self.swaplane
                 self.direction = self.turn
@@ -156,6 +171,7 @@ class CarAgent(Agent):
         if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):
             self.fill_queue()
         if not self.queue:
-            self.move(self.direction)
+            self.qmove = False
+            self.move(self.direction,self.qmove)
         else:
             self.move_queue()

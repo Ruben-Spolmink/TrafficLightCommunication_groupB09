@@ -24,6 +24,9 @@ class CarAgent(Agent):
         movement for a car based on the direction the car is moving
         in the case the move is a queue move a check is performed if the move was succesfull otherwise the move needs to be saved
         '''
+        square=3
+        move=self.speed/square
+        self.speed=self.speed-move+self.speed%square
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
             if direction == "N":

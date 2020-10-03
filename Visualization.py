@@ -6,8 +6,11 @@ from mesa.visualization.ModularVisualization import ModularServer
 '''
 This file launches the server and the model
 '''
-Intersectionmodel = Intersection
-
+#windows code
+#import asyncio
+#asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+#Intersectionmodel = Intersection
+#windows code
 grid = CanvasGrid(
     agent_portrayal, Intersectionmodel().width, Intersectionmodel().height, 750, 750
 )

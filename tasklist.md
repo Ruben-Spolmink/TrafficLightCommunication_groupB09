@@ -12,6 +12,6 @@
 - [ ] graphs - the data that is being collected should be visible in real time in a form of graph
 - [ ] legend - a small part in the webpage should contain information on what is going on screen
 - [ ] batch running - for cross fold validation we should be able to run the same test multiple times in a row.
-- [ ] standard traffic light cycles
+- [x] standard traffic light cycles
 - [ ] headless mode
 - [x] cars can see traffic lights

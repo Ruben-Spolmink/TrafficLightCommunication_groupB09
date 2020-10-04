@@ -3,6 +3,7 @@ import model
 from TrafficLight import TrafficLightAgent
 import random
 
+
 class CarAgent(Agent):
     def __init__(
         self, name, intersectionmodel, speed, direction, lane, pos, streetlength
@@ -34,7 +35,6 @@ class CarAgent(Agent):
         #move=int(self.speed/unit)
         move=1
         self.speed=self.speed-move+self.speed%unit+acceleration
-        #move=1
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
             if direction == "N":
@@ -62,7 +62,6 @@ class CarAgent(Agent):
                 elif qmove:
                     self.succes = False
                     print("can't move")
-
 
     def move_queue(self):
         '''

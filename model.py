@@ -6,6 +6,7 @@ import numpy as np
 import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
+from Legend import *
 
 SPAWNCHANCE = 3  # this should be an parameter in model interface
 
@@ -145,7 +146,10 @@ class Intersection(Model):
         self.tlightmatrix = lightconnection(
             self.tlightmatrix, self.trafficlightlist, intersections
         )
-        np.savetxt("data.csv", self.tlightmatrix, delimiter=",")
+
+        # Place legend
+        self.grid.place_agent(LegendCarIcon("Caricon", self), (65, 69))
+        self.grid.place_agent(LegendTlightIcon("Tlighticon", self), (65, 70))
 
     def step(self):
         '''

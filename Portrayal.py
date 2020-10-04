@@ -1,5 +1,6 @@
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
+from Legend import *
 
 
 def agent_portrayal(agent):
@@ -28,4 +29,20 @@ def agent_portrayal(agent):
         portrayal["w"] = "0.5"
         portrayal["h"] = "0.5"
         portrayal["Layer"] = "1"
+        return portrayal
+    elif isinstance(agent, LegendCarIcon):
+        portrayal["Shape"] = "car.png"
+        portrayal["Color"] = "black"
+        portrayal["Layer"] = "2"
+        portrayal["text"] = "                      Car"
+        portrayal["w"] = "1"
+        portrayal["h"] = "1"
+        return portrayal
+    elif isinstance(agent, LegendTlightIcon):
+        portrayal["Shape"] = "rect"
+        portrayal["Color"] = "red"
+        portrayal["text"] = "                      Traffic light"
+        portrayal["Layer"] = "2"
+        portrayal["w"] = "0.5"
+        portrayal["h"] = "0.5"
         return portrayal

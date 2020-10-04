@@ -1,5 +1,5 @@
 # DOMAS_groupB09
-![Gif of environment](intersection.gif | width=48)
+![Gif of environment](intersection.gif)
 muti agent system project
 
 To run the file call Visualizaiion.py. This file will launch a webpage where the user can interact

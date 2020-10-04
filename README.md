@@ -10,7 +10,7 @@ This repository contains code to generate a map with x^2 intersections (roadmapg
  visualizes the environment and runs the simulation (Visualization.py). This script launches a webpage with 
  the visualization.
 <br/> 
-## Commands
+## Scripts
 - Generating the map: <br/> 
 roadmapgenerator.py <gridsize> <streetlength> <#intersections> <br/> 
 These measures are in cm (e.g. a gridsize of 300 is a 3m x 3m grid). The number of intersections needs to be X^2 

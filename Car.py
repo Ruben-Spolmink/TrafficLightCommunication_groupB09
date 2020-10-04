@@ -31,7 +31,8 @@ class CarAgent(Agent):
         #if car closer than 75m (25 squares) and the light is red and speed>0 acceleration-=5.646
         #if speed=0 and light=green and speed<50 acceleration+=6.775
         acceleration=0
-        move=int(self.speed/unit)
+        #move=int(self.speed/unit)
+        move=1
         self.speed=self.speed-move+self.speed%unit+acceleration
         #move=1
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):

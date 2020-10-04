@@ -1,17 +1,21 @@
 import math
 import sys
 import copy
-import re
 
-# Generate roadmap
-# Call as follows: roadmapgenerator.py gridsize, streetlength, intersections
-# gridsize is the size of a cell in cm. e.g. 10 means the cells are 10x10 cm
-# streetlength is the length of a street between intersections in cm
-# intersections is the number of intersections (must be the square of a number)
-# The streets leading to the intersections from the edges are 1/2*streetlength
+"""
+Generates the Generatedmap.txt file that contains the layout of the road and intersections.
+Call as follows: roadmapgenerator.py gridsize streetlength intersections
+Gridsize is the size of a cell in cm. e.g. 10 means the cells are 10x10 cm
+Streetlength is the length of a street between intersections in cm
+Intersections is the number of intersections (must be the square of a number)
+The streets leading to the intersections from the edges are 1/2*streetlength
+We assume here that the street is 3m wide.
+Outer street lengths are 1/2 * streetlength, the distance between intersections is streetlength
+"""
+
+
 def generatepattern(streetlength, gridsize):
-    # assuming street = 3m wide
-    # Outer street lengths are 1/2 * streetlength, distance between intersections is streetlength
+    # Generates the pattern for the roadmap, this pattern is later copied into multiple directions.
     pattern = []
     cellsperlane = 300 / gridsize
     cellsperstreet = streetlength / gridsize / 2
@@ -26,7 +30,7 @@ def generatepattern(streetlength, gridsize):
         )
     cellsperlane = int(cellsperlane)
     cellsperstreet = int(cellsperstreet)
-    # Upper part
+    # Upper part of the intersection
     for i in range(cellsperstreet - 1):
         row = []
         for j in range(cellsperstreet):
@@ -64,7 +68,7 @@ def generatepattern(streetlength, gridsize):
     for j in range(cellsperstreet):
         lastrow.append("X,")
     pattern.append(lastrow)
-    # Middle part
+    # Middle part of the intersection
     for i in range(cellsperlane):
         row = []
         for j in range(cellsperstreet):
@@ -125,7 +129,7 @@ def generatepattern(streetlength, gridsize):
         for j in range(cellsperstreet):
             row.append("ER,")
         pattern.append(row)
-    # Lower part
+    # Lower part of the intersection
     firstrow = []
     for j in range(cellsperstreet):
         firstrow.append("X,")
@@ -173,13 +177,14 @@ def generatemap(gridsize, streetlength, intersections):
     if not (streetlength / gridsize).is_integer():
         print("streetlength/gridzise should be an integer")
         exit()
-    # grass = "x"
-    # road for going north, east, south, west = n, e, s, w
-    # lane for going right, straight, left = r, d, l
+    # grass = "X"
+    # road for going north, east, south, west = N,E,S,W
+    # lane for going right, straight, left = R,D,L
+    # car spawns = C
+    # intersection numbers = 0
     [pattern, height, width] = generatepattern(streetlength, gridsize)
     print("Pattern created")
     # Expand rows
-
     for j, row in enumerate(pattern):
         ogrow = copy.deepcopy(row)
         for i in range(int(math.sqrt(intersections)) - 1):
@@ -209,9 +214,9 @@ def generatemap(gridsize, streetlength, intersections):
 
 
 def createspawns(map, gridsize, streetlength, intersections):
+    # Creates the car spawns on the sides of the outer intersections
     for i in range(int(math.sqrt(intersections))):
         row = i * len(map[1]) / math.sqrt(intersections)
-
         # row = last grass patch
         row = row + streetlength / 2 / gridsize - 1
         # First half row
@@ -229,6 +234,7 @@ def createspawns(map, gridsize, streetlength, intersections):
 
 
 def createheader(map, gridsize, streetlength, intersections):
+    # Creates a header that contains creation information, useful for initializing the model.
     cellsperlane = 300 / gridsize
     map.insert(0, f"cellsperlane = {cellsperlane}")
     map.insert(1, f"gridsize = {gridsize}")

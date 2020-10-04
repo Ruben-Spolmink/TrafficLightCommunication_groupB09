@@ -1,19 +1,17 @@
+from Legend import *
 import random
-from mesa import Agent, Model
+from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 import numpy as np
 import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
-from Legend import *
-
-SPAWNCHANCE = 3  # this should be an parameter in model interface
 
 
-
-# creates a np array where all 0's are connections that go from row to column
 def lightconnection(lightmatrix, trafficlightlist, intersections):
+    # Creates a np array where all 0's are connections between traffic lights (what traffic light sends car to
+    # what trafic light).
     for trafficlightfrom in trafficlightlist:
         direction = trafficlightfrom[0][1:3]
         intersection = int(trafficlightfrom[0][3])
@@ -64,6 +62,8 @@ def lightconnection(lightmatrix, trafficlightlist, intersections):
 
 
 def readroadmap():
+    # Reads the generatedmap.txt and converts it into a list of lists, which can be used to locate traffic lights
+    # and car spawns.
     filepath = "Generatedmap.txt"
     roadmap = []
     spawns = []
@@ -83,9 +83,9 @@ def readroadmap():
             road = line.strip().split(",")
             roadmap.append(road)
             for x, tile in enumerate(road):
-                if tile.startswith("C"):
+                if tile.startswith("C"):  # C indicates car spawn
                     spawns.append([[x, y], tile])
-                if tile.startswith("T"):
+                if tile.startswith("T"):  # T indicates traffic light
                     numberoflights += 1
                     lights.append([[x, y], tile])
                     run += 1
@@ -102,10 +102,11 @@ def readroadmap():
 
 
 class Intersection(Model):
-    '''
-    Here the model is initialized
-    a map file is read to place the lanes, traffic lights and spawn points
-    '''
+    """
+    Here the model is initialized. The Generatedmap.txt is read in order to locate traffic lights and car spawns.
+    Cars and traffic lights are spawned here.
+    """
+
     def __init__(self):
         global NumberOfAgents
         self.schedule = RandomActivation(self)
@@ -120,6 +121,7 @@ class Intersection(Model):
             gridsize,
         ] = readroadmap()
         self.width = self.height
+        self.spawnchance = 3
         self.gridsize = gridsize
         self.streetlength = streetlength
         self.grid = MultiGrid(self.width, self.height, True)
@@ -128,16 +130,25 @@ class Intersection(Model):
         self.tlightmatrix[:] = np.nan
         self.trafficlightlist = []
         self.carID = 0
-        self.lightcombinations = [["SR", "SD", "SL", "WR"], ["ER", "ED", "EL", "SR"],
-                                  ["NR", "ND", "NL", "ER"], ["WR", "WD", "WL", "NR"]]
-        for i, light in enumerate(self.lights):
+        self.lightcombinations = [
+            ["SR", "SD", "SL", "WR"],
+            ["ER", "ED", "EL", "SR"],
+            ["NR", "ND", "NL", "ER"],
+            ["WR", "WD", "WL", "NR"],
+        ]
+        for i, light in enumerate(self.lights):  # Initializes traffic lights
             direction = light[1][1]
             lane = light[1][2]
             location = light[0]
             xlocation = int(location[0])
             ylocation = self.height - 1 - int(location[1])
             trafficlight = TrafficLightAgent(
-                f"{xlocation},{ylocation},{light[1][1:3]}", self, "red", direction, lane, i
+                f"{xlocation},{ylocation},{light[1][1:3]}",
+                self,
+                "red",
+                direction,
+                lane,
+                i,
             )
             self.trafficlightlist.append([light[1], i])
             self.schedule.add(trafficlight)
@@ -152,12 +163,12 @@ class Intersection(Model):
         self.grid.place_agent(LegendTlightIcon("Tlighticon", self), (65, 70))
 
     def step(self):
-        '''
-        step function that will randomly place cars based on the spawn chance
-        and will visit all the agents to perform their step function
-        '''
+        """
+        Step function that will randomly place cars based on the spawn chance
+        and will visit all the agents to perform their step function.
+        """
         for spawn in self.spawns:
-            if random.randint(0, 100) < SPAWNCHANCE:
+            if random.randint(0, 100) < self.spawnchance:
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height - 1 - int(location[1])
@@ -167,7 +178,8 @@ class Intersection(Model):
                     f"car{self.carID}",
                     self,
                     50,
-                    direction, lane,
+                    direction,
+                    lane,
                     [xlocation, ylocation],
                     self.streetlength,
                 )

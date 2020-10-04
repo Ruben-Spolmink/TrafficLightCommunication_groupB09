@@ -51,7 +51,7 @@ class CarAgent(Agent):
                         self, new_position
                     )  # all clear move to cell
                     self.succes = True
-                elif(qmove == True):
+                elif qmove:
                     self.succes = False
                     print("can't move")
 

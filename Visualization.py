@@ -12,8 +12,8 @@ This file launches the server and the model
 #Intersectionmodel = Intersection
 #windows code
 grid = CanvasGrid(
-    agent_portrayal, Intersectionmodel().width, Intersectionmodel().height, 750, 750
+    agent_portrayal, Intersection().width, Intersection().height, 750, 750
 )
-server = ModularServer(Intersectionmodel, [grid], "Intersectionmodel")
+server = ModularServer(Intersection, [grid], "Intersectionmodel")
 server.port = 8522  # The default
 server.launch()

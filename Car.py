@@ -24,19 +24,26 @@ class CarAgent(Agent):
         movement for a car based on the direction the car is moving
         in the case the move is a queue move a check is performed if the move was succesfull otherwise the move needs to be saved
         '''
-        square=3
-        move=self.speed/square
-        self.speed=self.speed-move+self.speed%square
+        #self.speed=self.speed/3.6
+        #self.speed=13.889
+        unit=3*3.6
+        #here I need to figure out how to measure distance between car and light
+        #if car closer than 75m (25 squares) and the light is red and speed>0 acceleration-=5.646
+        #if speed=0 and light=green and speed<50 acceleration+=6.775
+        acceleration=0
+        move=int(self.speed/unit)
+        self.speed=self.speed-move+self.speed%unit+acceleration
+        #move=1
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
             if direction == "N":
-                new_position = (self.pos[0], self.pos[1] + 1)
+                new_position = (self.pos[0], self.pos[1] + move)
             if direction == "E":
-                new_position = (self.pos[0] + 1, self.pos[1])
+                new_position = (self.pos[0] + move, self.pos[1])
             if direction == "S":
-                new_position = (self.pos[0], self.pos[1] - 1)
+                new_position = (self.pos[0], self.pos[1] - move)
             if direction == "W":
-                new_position = (self.pos[0] - 1, self.pos[1])
+                new_position = (self.pos[0] - move, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
                 self.model.grid.remove_agent(self)
                 self.model.schedule.remove(self)

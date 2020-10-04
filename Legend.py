@@ -10,10 +10,19 @@ class LegendCarIcon(Agent):
         self.model = intersectionmodel
 
 
-class LegendTlightIcon(Agent):
-    """ Class for creating the traffic light legend icon"""
+class LegendGreenTlightIcon(Agent):
+    """ Class for creating the green traffic light legend icon"""
 
     def __init__(self, name, intersectionmodel):
         super().__init__(name, intersectionmodel)
-        self.name = "TlightIcon"
+        self.name = "greenTlightIcon"
+        self.model = intersectionmodel
+
+
+class LegendRedTlightIcon(Agent):
+    """ Class for creating the red traffic light legend icon"""
+
+    def __init__(self, name, intersectionmodel):
+        super().__init__(name, intersectionmodel)
+        self.name = "redTlightIcon"
         self.model = intersectionmodel

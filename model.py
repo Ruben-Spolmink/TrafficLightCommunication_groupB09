@@ -159,8 +159,9 @@ class Intersection(Model):
         )
 
         # Place legend
-        self.grid.place_agent(LegendCarIcon("Caricon", self), (65, 69))
-        self.grid.place_agent(LegendTlightIcon("Tlighticon", self), (65, 70))
+        self.grid.place_agent(LegendCarIcon("Caricon", self), (65, 68))
+        self.grid.place_agent(LegendGreenTlightIcon("GreenTlighticon", self), (65, 69))
+        self.grid.place_agent(LegendRedTlightIcon("RedTlighticon", self), (65, 70))
 
     def step(self):
         """

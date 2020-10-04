@@ -38,10 +38,18 @@ def agent_portrayal(agent):
         portrayal["w"] = "1"
         portrayal["h"] = "1"
         return portrayal
-    elif isinstance(agent, LegendTlightIcon):
+    elif isinstance(agent, LegendGreenTlightIcon):
+        portrayal["Shape"] = "rect"
+        portrayal["Color"] = "green"
+        portrayal["text"] = "                      Green light"
+        portrayal["Layer"] = "2"
+        portrayal["w"] = "0.5"
+        portrayal["h"] = "0.5"
+        return portrayal
+    elif isinstance(agent, LegendRedTlightIcon):
         portrayal["Shape"] = "rect"
         portrayal["Color"] = "red"
-        portrayal["text"] = "                      Traffic light"
+        portrayal["text"] = "                      Red light"
         portrayal["Layer"] = "2"
         portrayal["w"] = "0.5"
         portrayal["h"] = "0.5"

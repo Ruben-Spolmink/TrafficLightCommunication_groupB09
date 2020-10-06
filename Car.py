@@ -30,19 +30,32 @@ class CarAgent(Agent):
          If the move couldn't be performed, it's saved again.
         """
         # IN PROGRESS
+       
+
+
         # self.speed=self.speed/3.6
         # self.speed=13.889
         unit = 3 * 3.6
+        if self.speed>50:
+            self.speed=50;
+            acceleration=0;
+
+        if self.speed<0:
+             self.speed=0;
+             acceleration=0;
         # here I need to figure out how to measure distance between car and light
-        # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration-=5.646
-        # if speed=0 and light=green and speed<50 acceleration+=6.775
+        # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration=-5.646
+        # if speed<50 and light=green and speed<50 acceleration=6.775
         acceleration = 0
         # move=int(self.speed/unit)
         move = 1
         self.speed = self.speed - move + self.speed % unit + acceleration
         # Checks whether the car can move and what it's new position is going to be.
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
-
+            #acceleration from stop
+            if self.speed<50:
+                acceleration=6.775
+            
             if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + move)
             if direction == "E":

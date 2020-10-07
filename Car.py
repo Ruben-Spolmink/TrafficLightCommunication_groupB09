@@ -35,7 +35,20 @@ class CarAgent(Agent):
 
         # self.speed=self.speed/3.6
         # self.speed=13.889
-        unit = 3 * 3.6
+        unit = 3 * 3.6 * 3
+        # here I need to figure out how to measure distance between car and light
+        # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration=-5.646
+        # if speed<50 and light=green and speed<50 acceleration=6.775
+        acceleration = 0
+        move=int(self.speed/unit)
+        #move = 1
+        self.speed = self.speed - move + self.speed % unit + acceleration
+        
+        #temporary solution - just stop dead when we hit a red light - can also be permanent solution if we dont care abt deceleration
+        if self.hasredlight()[0] and self.hasredlight()[1] == 0:
+            self.speed=0;
+
+        #chek if speed outside parameters
         if self.speed>50:
             self.speed=50;
             acceleration=0;
@@ -43,16 +56,9 @@ class CarAgent(Agent):
         if self.speed<0:
              self.speed=0;
              acceleration=0;
-        # here I need to figure out how to measure distance between car and light
-        # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration=-5.646
-        # if speed<50 and light=green and speed<50 acceleration=6.775
-        acceleration = 0
-        # move=int(self.speed/unit)
-        move = 1
-        self.speed = self.speed - move + self.speed % unit + acceleration
         # Checks whether the car can move and what it's new position is going to be.
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
-            #acceleration from stop
+            #acceleration from stop, we might want to make this parameter of speed to model non-monotonous acceleration
             if self.speed<50:
                 acceleration=6.775
             

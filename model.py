@@ -7,7 +7,7 @@ import numpy as np
 import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
-
+SPAWNNUMBER = 4
 
 def lightconnection(lightmatrix, trafficlightlist, intersections):
     # Creates a np array where all 0's are connections between traffic lights (what traffic light sends car to
@@ -108,7 +108,6 @@ class Intersection(Model):
     """
 
     def __init__(self):
-        global NumberOfAgents
         # self.tactic = "Standard"
         self.tactic = "Offset"
         self.offset = 3
@@ -126,7 +125,6 @@ class Intersection(Model):
             gridsize,
         ] = readroadmap()
         self.width = self.height
-        self.spawnchance = 3
         self.gridsize = gridsize
         self.streetlength = streetlength
         self.grid = MultiGrid(self.width, self.height, True)
@@ -191,23 +189,38 @@ class Intersection(Model):
         Step function that will randomly place cars based on the spawn chance
         and will visit all the agents to perform their step function.
         """
+
+        possible_spawns = [] #reset the list if it is was not empty
+        '''
+        gets all the empty spawning points where cars can spawn and adds them to the list
+        '''
         for spawn in self.spawns:
-            if random.randint(0, 100) < self.spawnchance:
+            location = spawn[0]
+            cell_contents = self.grid.get_cell_list_contents([location])
+            if not cell_contents:
+                possible_spawns.append(spawn)
+
+
+        '''
+        gets a random integer which is between 0 and SPAWNNUMBER that is the number of cars that are spawn.
+        For each spawn it will grab an empty spawn place and spawns a car there then remove the spawn place from the list, so there wont spawn a car on top of it.
+        '''
+        number_of_spawns = random.randint(0, SPAWNNUMBER)
+        while number_of_spawns > 0:
+            number_of_spawns -= 1
+            if possible_spawns:
+                spawn = random.choice(possible_spawns)
+                possible_spawns.remove(spawn)
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height - 1 - int(location[1])
                 direction = spawn[1][1]
                 lane = spawn[1][2]
                 car = CarAgent(
-                    f"car{self.carID}",
-                    self,
-                    50,
-                    direction,
-                    lane,
-                    [xlocation, ylocation],
-                    self.streetlength,
-                )
+                f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
                 self.carID += 1
                 self.schedule.add(car)
                 self.grid.place_agent(car, (xlocation, ylocation))
+
+
         self.schedule.step()

@@ -96,3 +96,35 @@ class TrafficLightAgent(Agent):
             and combi in self.model.lightcombinations[(3 + offset) % 4]
         ):
             self.trafficColor = "green"
+
+
+    def changecolorgreenwave(self, time, direction, lane, cycletime):
+        """Changes color of the traffic lights"""
+        combi = direction + lane
+        timeperiod = time % (cycletime * 4)
+        self.trafficColor = "red"
+        if self.intersectiony % 2 == self.intersectionx % 2:
+            offset = self.offset
+        else:
+            offset = 0
+        if (
+            6 <= timeperiod <= cycletime - 1
+            and combi in self.model.lightcombinations[(0 + offset) % 4]
+        ):
+            self.trafficColor = "green"
+        if (
+            cycletime + 6 <= timeperiod <= cycletime * 2 - 1
+            and combi in self.model.lightcombinations[(1 + offset) % 4]
+        ):
+            print((1 + offset) % 4)
+            self.trafficColor = "green"
+        if (
+            cycletime * 2 + 6 <= timeperiod <= cycletime * 3 - 1
+            and combi in self.model.lightcombinations[(2 + offset) % 4]
+        ):
+            self.trafficColor = "green"
+        if (
+            cycletime * 3 + 6 <= timeperiod <= cycletime * 4 - 1
+            and combi in self.model.lightcombinations[(3 + offset) % 4]
+        ):
+            self.trafficColor = "green"

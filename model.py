@@ -109,6 +109,11 @@ class Intersection(Model):
 
     def __init__(self):
         global NumberOfAgents
+        # self.tactic = "Standard"
+        self.tactic = "Offset"
+        self.offset = 3
+        # self.tactic = "Lookahead"
+        # self.tactic = "GreenWave"
         self.schedule = RandomActivation(self)
         [
             self.roadmap,
@@ -116,7 +121,7 @@ class Intersection(Model):
             self.lights,
             self.height,
             self.cellsperlane,
-            intersections,
+            self.intersections,
             streetlength,
             gridsize,
         ] = readroadmap()
@@ -136,7 +141,21 @@ class Intersection(Model):
             ["NR", "ND", "NL", "ER"],
             ["WR", "WD", "WL", "NR"],
         ]
+
+        self.intersectionmatrix = []  # matrix with intersectionnumbers in the right index
+        lastnumber = 0
+        for i in range(int(math.sqrt(self.intersections))):
+            tempmaptrix = []
+            for j in range(int(math.sqrt(self.intersections))):
+                tempmaptrix.append(j + lastnumber)
+            lastnumber = tempmaptrix[-1] +1
+            self.intersectionmatrix.append(tempmaptrix)
+        self.intersectionmatrix = np.array(self.intersectionmatrix)
+
         for i, light in enumerate(self.lights):  # Initializes traffic lights
+            intersectionnumber = int(light[1][3])
+            intersectiony = np.where(self.intersectionmatrix == intersectionnumber)[0]
+            intersectionx = np.where(self.intersectionmatrix == intersectionnumber)[1]
             direction = light[1][1]
             lane = light[1][2]
             location = light[0]
@@ -149,13 +168,17 @@ class Intersection(Model):
                 direction,
                 lane,
                 i,
+                intersectionnumber,
+                self.tactic,
+                self.offset,
+                [intersectionx, intersectiony],
             )
             self.trafficlightlist.append([light[1], i])
             self.schedule.add(trafficlight)
             self.grid.place_agent(trafficlight, (xlocation, ylocation))
 
         self.tlightmatrix = lightconnection(
-            self.tlightmatrix, self.trafficlightlist, intersections
+            self.tlightmatrix, self.trafficlightlist, self.intersections
         )
 
         # Place legend

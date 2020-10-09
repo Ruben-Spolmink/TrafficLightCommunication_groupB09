@@ -21,6 +21,8 @@ class TrafficLightAgent(Agent):
         self.intersectiony = intersectionindex[1]
 
     def step(self):
+        mostcars = np.argmax(np.nansum(self.model.tlightmatrix, axis=1))
+        goesto = np.where(~np.isnan(self.model.tlightmatrix[mostcars]))
         carcount = self.carsinfront()
         self.model.tlightmatrix[self.id, :][
             self.model.tlightmatrix[self.id, :] >= 0
@@ -31,7 +33,7 @@ class TrafficLightAgent(Agent):
         elif self.tactic == "Lookahead":
             pass
         elif self.tactic == "GreenWave":
-            pass
+            self.changecolorgreenwave(time, self.direction, self.lane, self.cycletime, mostcars, goesto)
         else :
             print("Tactic not specified")
             assert()
@@ -97,9 +99,9 @@ class TrafficLightAgent(Agent):
         ):
             self.trafficColor = "green"
 
-
-    def changecolorgreenwave(self, time, direction, lane, cycletime):
+    def changecolorgreenwave(self, time, direction, lane, cycletime, mostcars, goesto):
         """Changes color of the traffic lights"""
+
         combi = direction + lane
         timeperiod = time % (cycletime * 4)
         self.trafficColor = "red"
@@ -116,7 +118,6 @@ class TrafficLightAgent(Agent):
             cycletime + 6 <= timeperiod <= cycletime * 2 - 1
             and combi in self.model.lightcombinations[(1 + offset) % 4]
         ):
-            print((1 + offset) % 4)
             self.trafficColor = "green"
         if (
             cycletime * 2 + 6 <= timeperiod <= cycletime * 3 - 1

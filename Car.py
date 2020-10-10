@@ -30,7 +30,7 @@ class CarAgent(Agent):
          If the move couldn't be performed, it's saved again.
         """
         # IN PROGRESS
-       
+
 
 
         # self.speed=self.speed/3.6
@@ -43,7 +43,7 @@ class CarAgent(Agent):
         move=int(self.speed/unit)
         #move = 1
         self.speed = self.speed - move + self.speed % unit + acceleration
-        
+
         #temporary solution - just stop dead when we hit a red light - can also be permanent solution if we dont care abt deceleration
         if self.hasredlight()[0] and self.hasredlight()[1] == 0:
             self.speed=0;
@@ -61,7 +61,7 @@ class CarAgent(Agent):
             #acceleration from stop, we might want to make this parameter of speed to model non-monotonous acceleration
             if self.speed<50:
                 acceleration=6.775
-            
+
             if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + move)
             if direction == "E":
@@ -86,7 +86,6 @@ class CarAgent(Agent):
                     self.succes = True
                 elif qmove:
                     self.succes = False
-                    print("can't move")
 
     def move_queue(self):
         """
@@ -128,7 +127,6 @@ class CarAgent(Agent):
             if (
                 not self.queue
             ):  # after the final move in the queue the new direciton and the new lane is set as the current direction and lane
-                print("swapping lane and direction")
                 self.lane = self.swaplane
                 self.direction = self.turn
 

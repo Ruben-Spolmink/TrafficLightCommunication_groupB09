@@ -108,9 +108,8 @@ class Intersection(Model):
     """
 
     def __init__(self):
-        global NumberOfAgents
         # self.tactic = "Standard"
-        self.tactic = "Offset"
+        self.tactic = "GreenWave"
         self.offset = 3
         # self.tactic = "Lookahead"
         # self.tactic = "GreenWave"
@@ -142,6 +141,16 @@ class Intersection(Model):
             ["WR", "WD", "WL", "NR"],
         ]
 
+        # Needed for green wave
+        self.mostcars = []
+        self.goesto = []
+        self.cycletime = 30
+        self.firstgreenintersection = -1
+        self.secondgreenintersection = -1
+        self.firstcombination = None
+        self.secondcombination = None
+        self.firstcycledone = 0
+
         self.intersectionmatrix = []  # matrix with intersectionnumbers in the right index
         lastnumber = 0
         for i in range(int(math.sqrt(self.intersections))):
@@ -172,6 +181,7 @@ class Intersection(Model):
                 self.tactic,
                 self.offset,
                 [intersectionx, intersectiony],
+                self.cycletime,
             )
             self.trafficlightlist.append([light[1], i])
             self.schedule.add(trafficlight)
@@ -180,6 +190,7 @@ class Intersection(Model):
         self.tlightmatrix = lightconnection(
             self.tlightmatrix, self.trafficlightlist, self.intersections
         )
+
 
         # Place legend
         self.grid.place_agent(LegendCarIcon("Caricon", self), (65, 68))
@@ -191,6 +202,31 @@ class Intersection(Model):
         Step function that will randomly place cars based on the spawn chance
         and will visit all the agents to perform their step function.
         """
+
+        # Determine intersection of most cars and where they go to
+        if len(self.schedule.agents) > 12*self.intersections and ((self.schedule.steps % (self.cycletime*2)) == 0):
+            self.firstcycledone = 0
+            self.mostcars = np.argmax(np.nansum(self.tlightmatrix, axis=1))
+            self.goesto = np.where(~np.isnan(self.tlightmatrix[self.mostcars]))
+            self.firstgreenintersection = self.lights[self.mostcars][1][3]
+            self.secondgreenintersection = self.lights[self.goesto[0][0]][1][3]
+
+            # Determines the direction of traffic lights
+            firstdirection = self.schedule.agents[int(self.mostcars)].direction
+            seconddirection = self.schedule.agents[self.goesto[0][0]].direction
+
+            # Determines combinations of traffic lights that can stay green
+            for i, combination in enumerate(self.lightcombinations):
+                if firstdirection + "D" in combination:
+                    self.firstcombination = self.lightcombinations[i]
+                if seconddirection + "D" in combination:
+                    self.secondcombination = self.lightcombinations[i]
+            print(self.firstgreenintersection, self.secondgreenintersection, self.firstcombination, self.secondcombination)
+        # If 1st part of green wave is over (so 1 cycle has been done)
+        if len(self.schedule.agents) > 12*self.intersections and self.schedule.steps % self.cycletime == 0 and not \
+            ((self.schedule.steps % (self.cycletime*2)) == 0):
+            self.firstcycledone = 1
+
         for spawn in self.spawns:
             if random.randint(0, 100) < self.spawnchance:
                 location = spawn[0]
@@ -210,4 +246,5 @@ class Intersection(Model):
                 self.carID += 1
                 self.schedule.add(car)
                 self.grid.place_agent(car, (xlocation, ylocation))
+
         self.schedule.step()

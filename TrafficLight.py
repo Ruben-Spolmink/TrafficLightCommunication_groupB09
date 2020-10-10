@@ -6,7 +6,7 @@ class TrafficLightAgent(Agent):
     """Class for traffic lights. The cars in front are calculated and the messageboard is updated"""
 
     def __init__(self, name, intersectionmodel, trafficColor, direction, lane, number, intersectionnumber, tactic,
-                 offset, intersectionindex):
+                 offset, intersectionindex, cycletime):
         super().__init__(name, intersectionmodel)
         self.offset = offset
         self.intersectionnumber = intersectionnumber
@@ -15,14 +15,12 @@ class TrafficLightAgent(Agent):
         self.lane = lane
         self.trafficColor = trafficColor
         self.direction = direction
-        self.cycletime = 30
+        self.cycletime = cycletime
         self.tactic = tactic
         self.intersectionx = intersectionindex[0]
         self.intersectiony = intersectionindex[1]
 
     def step(self):
-        mostcars = np.argmax(np.nansum(self.model.tlightmatrix, axis=1))
-        goesto = np.where(~np.isnan(self.model.tlightmatrix[mostcars]))
         carcount = self.carsinfront()
         self.model.tlightmatrix[self.id, :][
             self.model.tlightmatrix[self.id, :] >= 0
@@ -33,7 +31,7 @@ class TrafficLightAgent(Agent):
         elif self.tactic == "Lookahead":
             pass
         elif self.tactic == "GreenWave":
-            self.changecolorgreenwave(time, self.direction, self.lane, self.cycletime, mostcars, goesto)
+            self.changecolorgreenwave(time, self.direction, self.lane, self.cycletime)
         else :
             print("Tactic not specified")
             assert()
@@ -86,7 +84,6 @@ class TrafficLightAgent(Agent):
             cycletime + 6 <= timeperiod <= cycletime * 2 - 1
             and combi in self.model.lightcombinations[(1 + offset) % 4]
         ):
-            print((1 + offset) % 4)
             self.trafficColor = "green"
         if (
             cycletime * 2 + 6 <= timeperiod <= cycletime * 3 - 1
@@ -99,33 +96,53 @@ class TrafficLightAgent(Agent):
         ):
             self.trafficColor = "green"
 
-    def changecolorgreenwave(self, time, direction, lane, cycletime, mostcars, goesto):
+    def changecolorgreenwave(self, time, direction, lane, cycletime):
         """Changes color of the traffic lights"""
 
         combi = direction + lane
         timeperiod = time % (cycletime * 4)
         self.trafficColor = "red"
-        if self.intersectiony % 2 == self.intersectionx % 2:
-            offset = self.offset
+
+        # If not part of green wave or first cycle is done do usual stuff
+        if (int(self.intersectionnumber) != int(self.model.firstgreenintersection) or self.model.firstcycledone) and \
+            int(self.intersectionnumber) != int(self.model.secondgreenintersection):
+            if self.intersectiony % 2 == self.intersectionx % 2:
+                offset = self.offset
+            else:
+                offset = 0
+            if (
+                6 <= timeperiod <= cycletime - 1
+                and combi in self.model.lightcombinations[(0 + offset) % 4]
+            ):
+                self.trafficColor = "green"
+            if (
+                cycletime + 6 <= timeperiod <= cycletime * 2 - 1
+                and combi in self.model.lightcombinations[(1 + offset) % 4]
+            ):
+                self.trafficColor = "green"
+            if (
+                cycletime * 2 + 6 <= timeperiod <= cycletime * 3 - 1
+                and combi in self.model.lightcombinations[(2 + offset) % 4]
+            ):
+                self.trafficColor = "green"
+            if (
+                cycletime * 3 + 6 <= timeperiod <= cycletime * 4 - 1
+                and combi in self.model.lightcombinations[(3 + offset) % 4]
+            ):
+                self.trafficColor = "green"
+        # Else turn green if part of the right combi of lights
         else:
-            offset = 0
-        if (
-            6 <= timeperiod <= cycletime - 1
-            and combi in self.model.lightcombinations[(0 + offset) % 4]
-        ):
-            self.trafficColor = "green"
-        if (
-            cycletime + 6 <= timeperiod <= cycletime * 2 - 1
-            and combi in self.model.lightcombinations[(1 + offset) % 4]
-        ):
-            self.trafficColor = "green"
-        if (
-            cycletime * 2 + 6 <= timeperiod <= cycletime * 3 - 1
-            and combi in self.model.lightcombinations[(2 + offset) % 4]
-        ):
-            self.trafficColor = "green"
-        if (
-            cycletime * 3 + 6 <= timeperiod <= cycletime * 4 - 1
-            and combi in self.model.lightcombinations[(3 + offset) % 4]
-        ):
-            self.trafficColor = "green"
+            if combi in self.model.firstcombination and \
+                    int(self.intersectionnumber) == int(self.model.firstgreenintersection) and\
+                    timeperiod % cycletime > 5:
+                self.trafficColor = "green"
+            if combi in self.model.secondcombination and \
+                    int(self.intersectionnumber) == int(self.model.secondgreenintersection):
+                if self.model.firstcycledone:
+                    self.trafficColor = "green"
+                elif timeperiod % cycletime > 5:
+                    self.trafficColor = "green"
+
+
+
+

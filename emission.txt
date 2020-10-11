@@ -1,12 +1,11 @@
-Velocity (0-30, 30-60, 60+), Acceleration (+ 0.5, 0.5-1.2, 1.2+  m/s2), CO, HC, NOx, absolute, proportional
-22, 49, 3; 3, 77, 20 : medium Velocity, high Acceleration, 
-22, 49, 3; 1, 88, 11 : medium Velocity, medium Acceleration, 
-22, 49, 3; 2, 92, 6 : medium Velocity, low Acceleration, 
-20, 45, 3; 3, 90, 17 : low Velocity, high Acceleration, 
-20, 45, 3; 3, 74, 23 : low Velocity, medium Acceleration, 
-20, 45, 3; 1, 80, 19 : low Velocity, low Acceleration, 
+22, 49, 3, 3, 77, 20 : medium Velocity, high Acceleration, 
+22, 49, 3, 1, 88, 11 : medium Velocity, medium Acceleration, 
+22, 49, 3, 2, 92, 6 : medium Velocity, low Acceleration, 
+20, 45, 3, 3, 90, 17 : low Velocity, high Acceleration, 
+20, 45, 3, 3, 74, 23 : low Velocity, medium Acceleration, 
+20, 45, 3, 1, 80, 19 : low Velocity, low Acceleration, 
 
-
+%Velocity (0-30 km/h, 30-60 km/h, 60+), Acceleration (+ 0.5, 0.5-1.2, 1.2+  m/s2), CO, HC, NOx, absolute, proportional
 
 %not to be used because high acc. is above 60 km/h 
 %high Velocity, high Acceleration, 18, 50, 

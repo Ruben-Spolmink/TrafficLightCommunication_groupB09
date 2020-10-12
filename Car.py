@@ -47,7 +47,11 @@ class CarAgent(Agent):
         #temporary solution - just stop dead when we hit a red light - can also be permanent solution if we dont care abt deceleration
         if self.hasredlight()[0] and self.hasredlight()[1] == 0:
             self.speed=0;
+        """
+        if <conditon for car to be closer than 75m to traffic light> and <codnition for traffic light to be red>
+        acceleration=-5.64*3.6
 
+        """
         #chek if speed outside parameters
         if self.speed>50:
             self.speed=50;
@@ -59,9 +63,18 @@ class CarAgent(Agent):
         # Checks whether the car can move and what it's new position is going to be.
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
             #acceleration from stop, we might want to make this parameter of speed to model non-monotonous acceleration
+            #VW polo acceleration
             if self.speed<50:
-                acceleration=6.775
-
+                acceleration=6.775*3.6
+            #truck acceleration if we use more than one type of vehicle
+            """
+            if self.speed<50
+                acceleration=0.24*3.6
+                if self.speed<40
+                acceleration=0.29*3.6
+                    if self.speed<30
+                    acceleration=0.28*3.6
+            """
             if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + move)
             if direction == "E":

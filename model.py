@@ -109,7 +109,7 @@ class Intersection(Model):
 
     def __init__(self):
         # self.tactic = "Standard"
-        self.tactic = "GreenWave"
+        self.tactic = "Offset"
         self.offset = 3
         # self.tactic = "Lookahead"
         # self.tactic = "GreenWave"
@@ -156,7 +156,7 @@ class Intersection(Model):
             tempmaptrix = []
             for j in range(int(math.sqrt(self.intersections))):
                 tempmaptrix.append(j + lastnumber)
-            lastnumber = tempmaptrix[-1] +1
+            lastnumber = tempmaptrix[-1] + 1
             self.intersectionmatrix.append(tempmaptrix)
         self.intersectionmatrix = np.array(self.intersectionmatrix)
 
@@ -256,6 +256,5 @@ class Intersection(Model):
                     self.carID += 1
                     self.schedule.add(car)
                     self.grid.place_agent(car, (xlocation, ylocation))
-
 
         self.schedule.step()

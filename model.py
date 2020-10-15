@@ -165,10 +165,13 @@ class Intersection(Model):
         # Initialize information dictionary
         self.trafficlightinfo = {}
         for i in range(self.intersections):
-            self.trafficlightinfo.update({f"intersection{i}": {"Trafficlightinfo": {}, "Timeinfo": {}}})
+            self.trafficlightinfo.update({f"intersection{i}": {"Carsinfrontinfo" : {},
+                                                               "Trafficlightinfo": {},
+                                                               "Timeinfo": {}}})
 
         for i, light in enumerate(self.lights):  # Initializes traffic lights
             self.trafficlightinfo[f"intersection{light[1][3]}"]["Trafficlightinfo"][f"{light[1][1:3]}"] = i
+            self.trafficlightinfo[f"intersection{light[1][3]}"]["Carsinfrontinfo"][i] = 0
             self.trafficlightinfo[f"intersection{light[1][3]}"]["Timeinfo"].update({"Currentgreen": -1,
                                                                                       "Currenttimegreen": 0,
                                                                                       "Maxtimegreen": 0})
@@ -236,7 +239,6 @@ class Intersection(Model):
                 self.firstcycledone = 1
 
         if self.tactic == "Proportional" and len(self.schedule.agents) > 12 * self.intersections:
-            #TODO: carsinfront doesnot count cars that go outside map
             carsinfront = np.nansum(self.tlightmatrix, axis=1)
             for i in range(self.intersections):
                 currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
@@ -246,7 +248,7 @@ class Intersection(Model):
                     totalcars = [0, 0, 0, 0]
                     for key in self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"].keys():
                         trafficlight = int(self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"][key])
-                        cars = carsinfront[trafficlight]
+                        cars = self.trafficlightinfo[f"intersection{i}"]["Carsinfrontinfo"][trafficlight]
                         for j, combi in enumerate(self.lightcombinations):
                             if key in combi:
                                 totalcars[j] = totalcars[j] + cars

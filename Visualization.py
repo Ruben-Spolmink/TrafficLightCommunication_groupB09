@@ -15,5 +15,5 @@ grid = CanvasGrid(
     agent_portrayal, Intersection().width, Intersection().height, 1000, 1000
 )
 server = ModularServer(Intersection, [grid], "Intersectionmodel")
-server.port = 8519  # The default
+server.port = 8520  # The default
 server.launch()

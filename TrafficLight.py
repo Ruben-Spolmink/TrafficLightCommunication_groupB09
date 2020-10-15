@@ -32,6 +32,8 @@ class TrafficLightAgent(Agent):
             pass
         elif self.tactic == "GreenWave":
             self.changecolorgreenwave(time, self.direction, self.lane, self.cycletime)
+        elif self.tactic == "Proportional":
+            self.changecolorproportion(time, self.direction, self.lane, self.cycletime)
         else :
             print("Tactic not specified")
             assert()
@@ -142,6 +144,14 @@ class TrafficLightAgent(Agent):
                     self.trafficColor = "green"
                 elif timeperiod % cycletime > 5:
                     self.trafficColor = "green"
+
+    def changecolorproportion(self, time, direction, lane, cycletime):
+        self.trafficColor = "red"
+        if self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"] != -1:
+            lightcombi = self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"]
+            if(self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
+                self.trafficColor = "green"
+
 
 
 

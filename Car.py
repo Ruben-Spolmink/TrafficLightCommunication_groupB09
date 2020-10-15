@@ -273,7 +273,6 @@ class CarAgent(Agent):
         else:
             self.move_queue()
 
-<<<<<<< HEAD
     # def emission(self, speed, acceleration):
     #     """
     #     IN PROGRESS
@@ -316,47 +315,3 @@ class CarAgent(Agent):
     #                 pass
     #             pass
     #     pass
-=======
-    def emission(self, speed, acceleration):
-        """
-        IN PROGRESS
-
-        ToDo: add import CSV; add an acceleration to the cars; implement function fully
-
-        This function outputs a cars emissions based on the speed and acceleration and stores them in a table.
-        The emissions are both measured in absolute mg/s as well as porportional to their overall emission shares.
-        """
-        emissionData = open("emission.txt") # load the emission data file
-
-        with open('emission.csv', mode='w') as emission_file:
-            emission_writer = csv.writer(emission_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            emission_writer.writerow(['John Smith', 'Accounting', 'November'])
-            emission_writer.writerow(['Erica Meyers', 'IT', 'March'])
-
-        for i in range(self): # for every car, evaluate the emission data and store it in the emission.csv file
-
-            # Velocity (0-30, 30-60), Acceleration (+ 0.5, 0.5-1.2, 1.2+  m/s2), CO, HC, NOx, absolute, proportional
-            if self.speed < 30:
-                if self.acceleration < 0.5:
-                    #emissionData[]
-                    pass
-                elif self.acceleration > 0.5 & self.acceleration < 1.2:
-
-                    pass
-                elif self.acceleration > 1.2:
-
-                    pass
-                pass
-            if self.speed >= 30:
-                if self.acceleration < 0.5:
-                    #emissionData[]
-                    pass
-                elif self.acceleration > 0.5 & self.acceleration < 1.2:
-
-                    pass
-                elif self.acceleration > 1.2:
-
-                    pass
-                pass
-        pass
->>>>>>> 82b28091552794323f5579307f8947c1e54571bd

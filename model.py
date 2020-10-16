@@ -111,8 +111,8 @@ class Intersection(Model):
         # self.tactic = "Standard"
         # self.tactic = "Offset"
         self.offset = 3
-        self.tactic = "Proportional"
-        # self.tactic = "Lookahead"
+        #self.tactic = "Proportional"
+        self.tactic = "Lookahead"
         # self.tactic = "GreenWave"
         self.schedule = RandomActivation(self)
         [
@@ -150,6 +150,9 @@ class Intersection(Model):
         self.firstcombination = None
         self.secondcombination = None
         self.firstcycledone = 0
+
+        # Needed for lookahead
+        self.mostexpectedcars = [0, 0, 0]
 
         self.intersectionmatrix = []  # matrix with intersectionnumbers in the right index
         lastnumber = 0
@@ -239,7 +242,6 @@ class Intersection(Model):
                 self.firstcycledone = 1
 
         if self.tactic == "Proportional" and len(self.schedule.agents) > 12 * self.intersections:
-            carsinfront = np.nansum(self.tlightmatrix, axis=1)
             for i in range(self.intersections):
                 currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
                 maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
@@ -255,11 +257,39 @@ class Intersection(Model):
                     # No cars? pick regular timeschedule
                     if sum(totalcars) == 0:
                         totalcars = [1, 1, 1, 1]
-                    print(totalcars)
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = \
                         totalcars.index(max(totalcars))
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"] = \
                        max(totalcars)/(sum(totalcars)/4)*self.cycletime
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = 0
+                if currenttimegreen == maxgreentime:
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1
+
+        if self.tactic == "Lookahead" and len(self.schedule.agents) > 12 * self.intersections:
+            self.mostexpectedcars = [0, 0, 0] # cars,intersection,combination
+            for i in range(self.intersections):
+                carsexpected = np.nansum(self.tlightmatrix, axis=0)
+                currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
+                maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
+                self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = currenttimegreen + 1
+                if currenttimegreen > maxgreentime + 6:
+                    totalcars = [0, 0, 0, 0]
+                    # For every direction + lane in intersection
+                    for key in self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"].keys():
+                        trafficlight = int(self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"][key])
+                        cars = self.trafficlightinfo[f"intersection{i}"]["Carsinfrontinfo"][trafficlight]
+                        # For every lightcombination
+                        for j, combi in enumerate(self.lightcombinations):
+                            if key in combi:
+                                totalcars[j] = totalcars[j] + cars + carsexpected[trafficlight]
+                                if totalcars[j] > self.mostexpectedcars[0]:
+                                    self.mostexpectedcars[0] = totalcars[j]
+                                    self.mostexpectedcars[1] = i
+                                    self.mostexpectedcars[2] = j
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = \
+                        (self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] + 1) % 4
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"] = \
+                       self.cycletime
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = 0
                 if currenttimegreen == maxgreentime:
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1

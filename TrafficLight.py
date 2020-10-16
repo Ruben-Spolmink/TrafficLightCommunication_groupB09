@@ -29,11 +29,11 @@ class TrafficLightAgent(Agent):
         if self.tactic == "Standard" or self.tactic == "Offset":
             self.changecoloroffset(time, self.direction, self.lane, self.cycletime)
         elif self.tactic == "Lookahead":
-            pass
+            self.changecolorlookahead()
         elif self.tactic == "GreenWave":
             self.changecolorgreenwave(time, self.direction, self.lane, self.cycletime)
         elif self.tactic == "Proportional":
-            self.changecolorproportion(time, self.direction, self.lane, self.cycletime)
+            self.changecolorproportion()
         else :
             print("Tactic not specified")
             assert()
@@ -145,7 +145,7 @@ class TrafficLightAgent(Agent):
                 elif timeperiod % cycletime > 5:
                     self.trafficColor = "green"
 
-    def changecolorproportion(self, time, direction, lane, cycletime):
+    def changecolorproportion(self):
         carsinfront = self.carsinfront()
         self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Carsinfrontinfo"][self.id] = \
             carsinfront
@@ -155,7 +155,15 @@ class TrafficLightAgent(Agent):
             if(self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
                 self.trafficColor = "green"
 
-
+    def changecolorlookahead(self):
+        carsinfront = self.carsinfront()
+        self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Carsinfrontinfo"][self.id] = \
+            carsinfront
+        self.trafficColor = "red"
+        if self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"] != -1:
+            lightcombi = self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"]
+            if(self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
+                self.trafficColor = "green"
 
 
 

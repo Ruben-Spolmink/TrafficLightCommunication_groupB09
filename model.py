@@ -286,6 +286,7 @@ class Intersection(Model):
                                     self.mostexpectedcars[0] = totalcars[j]
                                     self.mostexpectedcars[1] = i
                                     self.mostexpectedcars[2] = j
+                    # Reset timers
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = \
                         (self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] + 1) % 4
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"] = \
@@ -293,6 +294,34 @@ class Intersection(Model):
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = 0
                 if currenttimegreen == maxgreentime:
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1
+            if self.mostexpectedcars[0] != 0:
+                # Change green light information of intersection with most expected cars
+                self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"]["Timeinfo"]["Currentgreen"] =\
+                    self.mostexpectedcars[2] = self.mostexpectedcars[2]
+
+                # Get trafficlightnumbers of ligths where most cars are expected
+                mostcars = 0
+                mostcarslight = None
+                for direction in self.lightcombinations[self.mostexpectedcars[2]]:
+                    greenlight = int(self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"]\
+                                                        ["Trafficlightinfo"][direction])
+                    # Where the cars to those lights come from.
+                    comingfrom = np.argwhere(~np.isnan(self.tlightmatrix[:, greenlight]))
+                    for light in comingfrom:
+                        carsinfront = np.sum(self.tlightmatrix[light])
+                        if carsinfront > mostcars:
+                            mostcars = carsinfront
+                            mostcarslight = light
+
+                # Find intersection + directon of this light and change this intersection's green light information
+                if mostcars != 0:
+                    intersection = int(self.lights[mostcarslight][1][3])
+                    direction = self.lights[mostcarslight][1][1:3]
+                    self.trafficlightinfo[f"intersection{intersection}"]["Lookaheadtactic"]["Green"] = 1
+                    for k, directs in enumerate(self.lightcombinations):
+                        if direction in directs[0:3]:
+                            self.trafficlightinfo[f"intersection{intersection}"]["Timeinfo"]["Currentgreen"] = k
+                            pass
 
         possible_spawns = [] #reset the list if it is was not empty
         '''

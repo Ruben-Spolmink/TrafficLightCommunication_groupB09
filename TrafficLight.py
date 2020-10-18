@@ -146,9 +146,6 @@ class TrafficLightAgent(Agent):
                     self.trafficColor = "green"
 
     def changecolorproportion(self):
-        carsinfront = self.carsinfront()
-        self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Carsinfrontinfo"][self.id] = \
-            carsinfront
         self.trafficColor = "red"
         if self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"] != -1:
             lightcombi = self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"]
@@ -156,11 +153,8 @@ class TrafficLightAgent(Agent):
                 self.trafficColor = "green"
 
     def changecolorlookahead(self):
-        carsinfront = self.carsinfront()
-        self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Carsinfrontinfo"][self.id] = \
-            carsinfront
         self.trafficColor = "red"
-        if self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"] != -1:
+        if not self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Allred"]:
             lightcombi = self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"]
             if(self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
                 self.trafficColor = "green"

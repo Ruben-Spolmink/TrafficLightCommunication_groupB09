@@ -144,7 +144,7 @@ class Intersection(Model):
         # Needed for green wave
         self.mostcars = []
         self.goesto = []
-        self.cycletime = 30
+        self.cycletime = 60
         self.firstgreenintersection = -1
         self.secondgreenintersection = -1
         self.firstcombination = None
@@ -168,16 +168,15 @@ class Intersection(Model):
         # Initialize information dictionary
         self.trafficlightinfo = {}
         for i in range(self.intersections):
-            self.trafficlightinfo.update({f"intersection{i}": {"Carsinfrontinfo" : {},
-                                                               "Trafficlightinfo": {},
+            self.trafficlightinfo.update({f"intersection{i}": {"Trafficlightinfo": {},
                                                                "Timeinfo": {}}})
 
         for i, light in enumerate(self.lights):  # Initializes traffic lights
             self.trafficlightinfo[f"intersection{light[1][3]}"]["Trafficlightinfo"][f"{light[1][1:3]}"] = i
-            self.trafficlightinfo[f"intersection{light[1][3]}"]["Carsinfrontinfo"][i] = 0
             self.trafficlightinfo[f"intersection{light[1][3]}"]["Timeinfo"].update({"Currentgreen": -1,
                                                                                       "Currenttimegreen": 0,
-                                                                                      "Maxtimegreen": 0})
+                                                                                      "Maxtimegreen": 0,
+                                                                                      "Allred": 1})
             intersectionnumber = int(light[1][3])
             intersectiony = np.where(self.intersectionmatrix == intersectionnumber)[0]
             intersectionx = np.where(self.intersectionmatrix == intersectionnumber)[1]
@@ -247,10 +246,11 @@ class Intersection(Model):
                 maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
                 self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = currenttimegreen + 1
                 if currenttimegreen > maxgreentime + 6:
+                    carsinfront = np.nansum(self.tlightmatrix, axis=1)
                     totalcars = [0, 0, 0, 0]
                     for key in self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"].keys():
                         trafficlight = int(self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"][key])
-                        cars = self.trafficlightinfo[f"intersection{i}"]["Carsinfrontinfo"][trafficlight]
+                        cars = carsinfront[trafficlight]
                         for j, combi in enumerate(self.lightcombinations):
                             if key in combi:
                                 totalcars[j] = totalcars[j] + cars
@@ -268,16 +268,18 @@ class Intersection(Model):
         if self.tactic == "Lookahead" and len(self.schedule.agents) > 12 * self.intersections:
             self.mostexpectedcars = [0, 0, 0] # cars,intersection,combination
             for i in range(self.intersections):
-                carsexpected = np.nansum(self.tlightmatrix, axis=0)
                 currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
                 maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
                 self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = currenttimegreen + 1
                 if currenttimegreen > maxgreentime + 6:
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Allred"] = 0
+                    carsexpected = np.nansum(self.tlightmatrix, axis=0)
+                    carsinfront = np.nansum(self.tlightmatrix, axis=1)
                     totalcars = [0, 0, 0, 0]
                     # For every direction + lane in intersection
                     for key in self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"].keys():
                         trafficlight = int(self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"][key])
-                        cars = self.trafficlightinfo[f"intersection{i}"]["Carsinfrontinfo"][trafficlight]
+                        cars = carsinfront[trafficlight]
                         # For every lightcombination
                         for j, combi in enumerate(self.lightcombinations):
                             if key in combi:
@@ -293,36 +295,37 @@ class Intersection(Model):
                        self.cycletime
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = 0
                 if currenttimegreen == maxgreentime:
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Allred"] = 1
             if self.mostexpectedcars[0] != 0:
                 # Change green light information of intersection with most expected cars
                 self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"]["Timeinfo"]["Currentgreen"] =\
-                    self.mostexpectedcars[2] = self.mostexpectedcars[2]
+                    self.mostexpectedcars[2]
 
                 # Get trafficlightnumbers of ligths where most cars are expected
                 mostcars = 0
                 mostcarslight = None
+                comingfrom = np.nansum(self.tlightmatrix, axis=1)
                 for direction in self.lightcombinations[self.mostexpectedcars[2]]:
                     greenlight = int(self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"]\
                                                         ["Trafficlightinfo"][direction])
                     # Where the cars to those lights come from.
-                    comingfrom = np.argwhere(~np.isnan(self.tlightmatrix[:, greenlight]))
-                    for light in comingfrom:
-                        carsinfront = np.sum(self.tlightmatrix[light])
-                        if carsinfront > mostcars:
-                            mostcars = carsinfront
-                            mostcarslight = light
+                    lightscomingfrom = np.argwhere(~np.isnan(self.tlightmatrix[:, greenlight]))
+                    for light in lightscomingfrom:
+                        if light:
+                            light = light[0]
+                            carsinfront = np.sum(comingfrom[light])
+                            if carsinfront > mostcars:
+                                mostcars = int(carsinfront)
+                                mostcarslight = light
 
                 # Find intersection + directon of this light and change this intersection's green light information
                 if mostcars != 0:
                     intersection = int(self.lights[mostcarslight][1][3])
                     direction = self.lights[mostcarslight][1][1:3]
-                    self.trafficlightinfo[f"intersection{intersection}"]["Lookaheadtactic"]["Green"] = 1
                     for k, directs in enumerate(self.lightcombinations):
                         if direction in directs[0:3]:
                             self.trafficlightinfo[f"intersection{intersection}"]["Timeinfo"]["Currentgreen"] = k
                             pass
-
         possible_spawns = [] #reset the list if it is was not empty
         '''
         gets all the empty spawning points where cars can spawn and adds them to the list

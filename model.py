@@ -7,7 +7,9 @@ import numpy as np
 import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
-SPAWNNUMBER = 4
+from mesa.datacollection import DataCollector
+
+
 
 def lightconnection(lightmatrix, trafficlightlist, intersections):
     # Creates a np array where all 0's are connections between traffic lights (what traffic light sends car to
@@ -107,13 +109,11 @@ class Intersection(Model):
     Cars and traffic lights are spawned here.
     """
 
-    def __init__(self):
-        # self.tactic = "Standard"
-        # self.tactic = "Offset"
+    def __init__(self, spawnrate=10, tactic="Standard"):
+        self.tactic = tactic  # [Standard, Offset, Proportional, Lookahead, GreenWave]
+        self.spawnrate = spawnrate
         self.offset = 3
-        #self.tactic = "Proportional"
-        self.tactic = "Lookahead"
-        # self.tactic = "GreenWave"
+        self.spawnnumber = 4
         self.schedule = RandomActivation(self)
         [
             self.roadmap,
@@ -140,7 +140,6 @@ class Intersection(Model):
             ["NR", "ND", "NL", "ER"],
             ["WR", "WD", "WL", "NR"],
         ]
-
         # Needed for green wave
         self.mostcars = []
         self.goesto = []
@@ -164,6 +163,10 @@ class Intersection(Model):
             self.intersectionmatrix.append(tempmaptrix)
         self.intersectionmatrix = np.array(self.intersectionmatrix)
 
+        # Data collection
+        # self.dc = DataCollector(
+        #     model_reporters={"agent_count": lambdam: m.schedule.get_agent_count()}, agent_reporters = {
+        #     "name": lambdaa: a.name})
 
         # Initialize information dictionary
         self.trafficlightinfo = {}
@@ -341,7 +344,7 @@ class Intersection(Model):
         gets a random integer which is between 0 and SPAWNNUMBER that is the number of cars that are spawn.
         For each spawn it will grab an empty spawn place and spawns a car there then remove the spawn place from the list, so there wont spawn a car on top of it.
         '''
-        number_of_spawns = random.randint(0, SPAWNNUMBER)
+        number_of_spawns = random.randint(0, self.spawnnumber)
         while number_of_spawns > 0:
             number_of_spawns -= 1
             if possible_spawns:
@@ -352,11 +355,10 @@ class Intersection(Model):
                 ylocation = self.height - 1 - int(location[1])
                 direction = spawn[1][1]
                 lane = spawn[1][2]
-                if random.randint(0,100) < 10:
+                if random.randint(0, 100) < self.spawnrate:
                     car = CarAgent(
                     f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
                     self.carID += 1
                     self.schedule.add(car)
                     self.grid.place_agent(car, (xlocation, ylocation))
-
         self.schedule.step()

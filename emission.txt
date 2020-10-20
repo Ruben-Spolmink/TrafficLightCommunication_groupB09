@@ -1,21 +1,17 @@
-22, 49, 3 : medium Velocity, high Acceleration, 
-22, 49, 3 : medium Velocity, medium Acceleration, 
-22, 49, 3  : medium Velocity, low Acceleration, 
-20, 45, 3 : low Velocity, high Acceleration, 
-20, 45, 3 : low Velocity, medium Acceleration, 
-20, 45, 3 : low Velocity, low Acceleration, 
+CO2 (petrol car): 
+E0, f1, f2, f3, f4, f5, f6
+0, 0.55, 0.16, 0, 0.27, 0.51, 0.18
 
-NOTE: data requested from researchers for more accurate data 
+NOx (petrol car, acc. deacc.):
+E0, f1, f2, f3, f4, f5, f6
+0, 0.0006, 0.0001, 0, 0.0004, 0.0004, 0.0002
+0, 0.0002, 0, 0, 0, 0, 0
 
-%Velocity (0-30 km/h, 30-60 km/h, 60+), Acceleration (+ 0.5, 0.5-1.2, 1.2+  mg/s2), CO, HC, NOx, absolute, proportional
-3, 77, 20 : medium Velocity, high Acceleration, 
-1, 88, 11 : medium Velocity, medium Acceleration, 
-2, 92, 6  : medium Velocity, low Acceleration, 
-3, 90, 17 : low Velocity, high Acceleration, 
-3, 74, 23 : low Velocity, medium Acceleration, 
-1, 80, 19 : low Velocity, low Acceleration, 
+VOC (petrol car,  acc. deacc.):
+E0, f1, f2, f3, f4, f5, f6
+0, 0.00447, 0.0000007, -0.000000028, -0.00000034, 0.000005, 0.0000017
+0, 0.0026, 0, 0, 0, 0, 0
 
-%not to be used because high acc. is above 60 km/h 
-%high Velocity, high Acceleration, 18, 50, 
-%high Velocity, medium Acceleration, 18, 50, 
-%high Velocity, low Acceleration, 18, 50, 
+PM (petrol car):
+E0, f1, f2, f3, f4, f5, f6
+0, 0, 0.000016, 0.00000092, 0, 0.0000375, 0.000019

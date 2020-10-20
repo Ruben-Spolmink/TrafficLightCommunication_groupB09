@@ -3,13 +3,23 @@ from Portrayal import agent_portrayal
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 import sys
+from mesa.visualization.UserParam import UserSettableParameter
 
 #uncomment if there are windows issues
 #import asyncio
 #asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-settings = {"spawnrate": 30,
-            "tactic": "Standard"}
+settings = {"tactic": "Standard",
+            "spawnrate": UserSettableParameter(
+                "slider",
+                "Spawnrate",
+                30,
+                0,
+                50,
+                1,
+                description="Choose how many agents to include in the model",
+            )
+            }
 
 
 # Default runs with visualization

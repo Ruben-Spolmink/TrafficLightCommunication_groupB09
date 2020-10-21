@@ -33,41 +33,43 @@ class CarAgent(Agent):
         """
         # IN PROGRESS
 
-
+        SpeedTransCoef=3.6
 
         # self.speed=self.speed/3.6
         # self.speed=13.889
-        unit = 3 * 3.6 * 3
+        square=3*3
+        unit = square *SpeedTransCoef
+        reactDist=75
         # here I need to figure out how to measure distance between car and light
         # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration=-5.646
         # if speed<50 and light=green and speed<50 acceleration=6.775
-        acceleration = 0
+
         move=int(self.speed/unit)
         #move = 1
-        self.speed = self.speed - move + self.speed % unit + acceleration
+    
+        acceleration = 0
+     
+        #slowing before a red light
+        if self.hasredlight()[1]*square <= reactDist and self.speed>-5.64*SpeedTransCoef and not(self.hasredlight()[0]==1):
+            #acceleration= self.speed/((self.hasredlight()[1]*square-square)/((self.speed-  5.64*3.6)*3.6))
+            acceleration=-5.64*SpeedTransCoef
 
-        #temporary solution - just stop dead when we hit a red light - can also be permanent solution if we dont care abt deceleration
-        if self.hasredlight()[0] and self.hasredlight()[1] == 0:
+        #stopping at red light
+        if self.hasredlight()[0] and self.hasredlight()[1] == 1:
             self.speed=0;
         """
         if <conditon for car to be closer than 75m to traffic light> and <codnition for traffic light to be red>
         acceleration=-5.64*3.6
 
         """
-        #chek if speed outside parameters
-        if self.speed>50:
-            self.speed=50;
-            acceleration=0;
-
-        if self.speed<0:
-             self.speed=0;
-             acceleration=0;
+     
+   
         # Checks whether the car can move and what it's new position is going to be.
-        if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
+        if not (self.hasredlight()[0] and self.hasredlight()[1] == 1):
             #acceleration from stop, we might want to make this parameter of speed to model non-monotonous acceleration
             #VW polo acceleration
             if self.speed<50:
-                acceleration=6.775*3.6
+                acceleration=6.775*SpeedTransCoef
             #truck acceleration if we use more than one type of vehicle
             """
             if self.speed<50
@@ -101,7 +103,15 @@ class CarAgent(Agent):
                     self.succes = True
                 elif qmove:
                     self.succes = False
+        self.speed = self.speed - move + self.speed % unit + acceleration
+      #chek if speed outside parameters
+        if self.speed>50:
+            self.speed=50;
+            acceleration=0;
 
+        if self.speed<0:
+             self.speed=0;
+             acceleration=0;
     def move_queue(self):
         """
         Performing moves on basis of the queue. In the case that the move is not succesfull,
@@ -315,3 +325,4 @@ class CarAgent(Agent):
     #                 pass
     #             pass
     #     pass
+            # IN PROGRESS

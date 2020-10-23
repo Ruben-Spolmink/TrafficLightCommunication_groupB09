@@ -10,6 +10,17 @@ from TrafficLight import TrafficLightAgent
 from mesa.datacollection import DataCollector
 
 
+def reademissionvalues():
+    emissionvalues = {}
+    with open("emission.txt") as emissionfile:
+        lines = emissionfile.readlines()
+        lines.pop(0)
+        for line in lines:
+            [cat, values] = line.split(":")
+            values = [float(x) for x in (values.split(","))]
+            emissionvalues[cat] = values
+    return emissionvalues
+
 
 def lightconnection(lightmatrix, trafficlightlist, intersections):
     # Creates a np array where all 0's are connections between traffic lights (what traffic light sends car to
@@ -115,6 +126,8 @@ class Intersection(Model):
         self.offset = 3
         self.spawnnumber = 4
         self.schedule = RandomActivation(self)
+        self.slowmotionrate = 0.1
+        self.emissionvalues = reademissionvalues()
         [
             self.roadmap,
             self.spawns,
@@ -329,36 +342,21 @@ class Intersection(Model):
                         if direction in directs[0:3]:
                             self.trafficlightinfo[f"intersection{intersection}"]["Timeinfo"]["Currentgreen"] = k
                             pass
-        possible_spawns = [] #reset the list if it is was not empty
-        '''
-        gets all the empty spawning points where cars can spawn and adds them to the list
-        '''
+
+
         for spawn in self.spawns:
             location = spawn[0]
             cell_contents = self.grid.get_cell_list_contents([location])
-            if not cell_contents:
-                possible_spawns.append(spawn)
-
-
-        '''
-        gets a random integer which is between 0 and SPAWNNUMBER that is the number of cars that are spawn.
-        For each spawn it will grab an empty spawn place and spawns a car there then remove the spawn place from the list, so there wont spawn a car on top of it.
-        '''
-        number_of_spawns = random.randint(0, self.spawnnumber)
-        while number_of_spawns > 0:
-            number_of_spawns -= 1
-            if possible_spawns:
-                spawn = random.choice(possible_spawns)
-                possible_spawns.remove(spawn)
+            if not cell_contents and random.randint(0, 100/self.slowmotionrate) < self.spawnrate:
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height - 1 - int(location[1])
                 direction = spawn[1][1]
                 lane = spawn[1][2]
-                if random.randint(0, 100) < self.spawnrate:
-                    car = CarAgent(
-                    f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
-                    self.carID += 1
-                    self.schedule.add(car)
-                    self.grid.place_agent(car, (xlocation, ylocation))
+                car = CarAgent(
+                f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
+                self.carID += 1
+                self.schedule.add(car)
+                self.grid.place_agent(car, (xlocation, ylocation))
+
         self.schedule.step()

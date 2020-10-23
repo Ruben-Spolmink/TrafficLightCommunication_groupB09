@@ -14,7 +14,9 @@ class CarAgent(Agent):
     ):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
-        self.speed = speed
+        self.speed = 13.9 # 50 km/h = 13.9 m/s.
+        self.acceleration = 0.00
+        self.distincell = 0 # keeps track of how far the car is in the current cell
         self.direction = direction
         self.pos = pos
         self.queue = []
@@ -25,68 +27,42 @@ class CarAgent(Agent):
         self.succes = True
 
     def move(self, direction, qmove):
+
         """
         The movement of the car is handled here, guided by the direction of the car.
          When a car passes a trafficlight, moves get queued up.
          In the case the move is a queued move, a check is performed.
          If the move couldn't be performed, it's saved again.
         """
-        # IN PROGRESS
 
-        SpeedTransCoef=3.6
-
-        # self.speed=self.speed/3.6
-        # self.speed=13.889
-        square=3*3
-        unit = square *SpeedTransCoef
-        reactDist=75
         # here I need to figure out how to measure distance between car and light
         # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration=-5.646
         # if speed<50 and light=green and speed<50 acceleration=6.775
+        [redlight, distance] = self.hasredlight()
+        if redlight and self.speed > 0 and distance*3 > 75:
+            self.acceleration = -5.65
+        elif self.speed < 13.9:
+            self.acceleration = 6.775
+        else:
+            self.acceleration = 0
 
-        move=int(self.speed/unit)
-        #move = 1
-    
-        acceleration = 0
-     
-        #slowing before a red light
-        if self.hasredlight()[1]*square <= reactDist and self.speed>-5.64*SpeedTransCoef and not(self.hasredlight()[0]==1):
-            #acceleration= self.speed/((self.hasredlight()[1]*square-square)/((self.speed-  5.64*3.6)*3.6))
-            acceleration=-5.64*SpeedTransCoef
+        self.speed = max(13.9, self.speed + self.acceleration*self.model.slowmotionrate)
 
-        #stopping at red light
-        if self.hasredlight()[0] and self.hasredlight()[1] == 1:
-            self.speed=0;
-        """
-        if <conditon for car to be closer than 75m to traffic light> and <codnition for traffic light to be red>
-        acceleration=-5.64*3.6
+        if redlight and distance == 1:
+            self.speed = 0
 
-        """
-     
-   
-        # Checks whether the car can move and what it's new position is going to be.
-        if not (self.hasredlight()[0] and self.hasredlight()[1] == 1):
-            #acceleration from stop, we might want to make this parameter of speed to model non-monotonous acceleration
-            #VW polo acceleration
-            if self.speed<50:
-                acceleration=6.775*SpeedTransCoef
-            #truck acceleration if we use more than one type of vehicle
-            """
-            if self.speed<50
-                acceleration=0.24*3.6
-                if self.speed<40
-                acceleration=0.29*3.6
-                    if self.speed<30
-                    acceleration=0.28*3.6
-            """
+        self.emission(self.speed, self.acceleration)
+
+        self.distincell = (self.distincell + self.speed * self.model.slowmotionrate) % 3
+        if self.distincell + self.speed * self.model.slowmotionrate >= 3:
             if direction == "N":
-                new_position = (self.pos[0], self.pos[1] + move)
+                new_position = (self.pos[0], self.pos[1] + 1)
             if direction == "E":
-                new_position = (self.pos[0] + move, self.pos[1])
+                new_position = (self.pos[0] + 1, self.pos[1])
             if direction == "S":
-                new_position = (self.pos[0], self.pos[1] - move)
+                new_position = (self.pos[0], self.pos[1] - 1)
             if direction == "W":
-                new_position = (self.pos[0] - move, self.pos[1])
+                new_position = (self.pos[0] - 1, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
                 self.model.grid.remove_agent(self)
                 self.model.schedule.remove(self)
@@ -103,15 +79,7 @@ class CarAgent(Agent):
                     self.succes = True
                 elif qmove:
                     self.succes = False
-        self.speed = self.speed - move + self.speed % unit + acceleration
-      #chek if speed outside parameters
-        if self.speed>50:
-            self.speed=50;
-            acceleration=0;
 
-        if self.speed<0:
-             self.speed=0;
-             acceleration=0;
     def move_queue(self):
         """
         Performing moves on basis of the queue. In the case that the move is not succesfull,
@@ -283,46 +251,20 @@ class CarAgent(Agent):
         else:
             self.move_queue()
 
-    # def emission(self, speed, acceleration):
-    #     """
-    #     IN PROGRESS
-    #
-    #     ToDo: add import CSV; add an acceleration to the cars; implement function fully
-    #
-    #     This function outputs a cars emissions based on the speed and acceleration and stores them in a table.
-    #     The emissions are both measured in absolute mg/s as well as porportional to their overall emission shares.
-    #     """
-    #     emissionData = open("emission.txt") # load the emission data file
-    #
-    #     with open('emission.csv', mode='w') as emission_file:
-    #         emission_writer = csv.writer(emission_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    #         emission_writer.writerow(['John Smith', 'Accounting', 'November'])
-    #         emission_writer.writerow(['Erica Meyers', 'IT', 'March'])
-    #
-    #     for i in range(self): # for every car, evaluate the emission data and store it in the emission.csv file
-    #
-    #         # Velocity (0-30, 30-60), Acceleration (+ 0.5, 0.5-1.2, 1.2+  m/s2), CO, HC, NOx, absolute, proportional
-    #         if self.speed < 30:
-    #             if self.acceleration < 0.5:
-    #                 emissionData[]
-    #                 pass
-    #             elif self.acceleration > 0.5 & self.acceleration < 1.2:
-    #
-    #                 pass
-    #             elif self.acceleration > 1.2:
-    #
-    #                 pass
-    #             pass
-    #         if self.speed >= 30:
-    #             if self.acceleration < 0.5:
-    #                 emissionData[]
-    #                 pass
-    #             elif self.acceleration > 0.5 & self.acceleration < 1.2:
-    #
-    #                 pass
-    #             elif self.acceleration > 1.2:
-    #
-    #                 pass
-    #             pass
-    #     pass
-            # IN PROGRESS
+    def emission(self, speed, acceleration):
+        """
+        IN PROGRESS
+
+        This function outputs a cars emissions based on the speed and acceleration and stores them in a table.
+        The emissions are both measured in absolute mg/s as well as porportional to their overall emission shares.
+        """
+        emission = []
+        for key in self.model.emissionvalues.keys():
+            a = self.model.emissionvalues[key]
+            emission.append(max(a[0], a[1] + a[2]*speed + a[3]*speed**2 + a[4]*acceleration + a[5]*acceleration**2 + \
+                            a[6]*speed*acceleration))
+        if acceleration < -0.5:
+            emission.pop(2)
+        else:
+            emission.pop(1)
+        return emission

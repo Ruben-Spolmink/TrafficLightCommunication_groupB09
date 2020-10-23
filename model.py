@@ -11,6 +11,8 @@ from mesa.datacollection import DataCollector
 import csv
 
 
+
+
 def reademissionvalues():
     emissionvalues = {}
     with open("emission.txt") as emissionfile:
@@ -129,10 +131,10 @@ class Intersection(Model):
         self.schedule = RandomActivation(self)
         self.slowmotionrate = 0.1
         self.emissionvalues = reademissionvalues()
-        self.emissionhistory = []
-        self.emissionstep = []
-        self.travelhistory = []
-        self.travelstep = []
+        self.emission = [0, 0, 0]
+        self.totalemission = [0, 0, 0]
+        self.traveltime = []
+        self.averagetraveltime = 0
         [
             self.roadmap,
             self.spawns,
@@ -182,9 +184,12 @@ class Intersection(Model):
         self.intersectionmatrix = np.array(self.intersectionmatrix)
 
         # Data collection
-        # self.dc = DataCollector(
-        #     model_reporters={"agent_count": lambdam: m.schedule.get_agent_count()}, agent_reporters = {
-        #     "name": lambdaa: a.name})
+        self.datacollector = DataCollector(
+            model_reporters={"AverageTraveltime": "averagetraveltime",
+                             "CO2": lambda m: self.getco2(),
+                             "NOx": lambda m: self.getnox(),
+                             "PM10": lambda m: self.getpm()},
+            )
 
         # Initialize information dictionary
         self.trafficlightinfo = {}
@@ -231,6 +236,22 @@ class Intersection(Model):
         self.grid.place_agent(LegendGreenTlightIcon("GreenTlighticon", self), (65, 69))
         self.grid.place_agent(LegendRedTlightIcon("RedTlighticon", self), (65, 70))
 
+
+
+    # Get emission values
+
+    def getco2(self):
+
+        return self.emission[0]
+
+    def getnox(self):
+
+        return self.emission[1]
+
+    def getpm(self):
+
+        return self.emission[2
+        ]
     def step(self):
         """
         Step function that will randomly place cars based on the spawn chance
@@ -238,8 +259,8 @@ class Intersection(Model):
         """
 
         # Clear all previous step's emission and travel time
-        self.emissionstep = []
-        self.travelstep = []
+        if len(self.traveltime) > 0:
+            self.averagetraveltime = sum(self.traveltime)/len(self.traveltime)
 
         # Determine intersection of most cars and where they go to
         if self.tactic == "GreenWave" and\
@@ -353,7 +374,6 @@ class Intersection(Model):
                             self.trafficlightinfo[f"intersection{intersection}"]["Timeinfo"]["Currentgreen"] = k
                             pass
 
-
         for spawn in self.spawns:
             location = spawn[0]
             cell_contents = self.grid.get_cell_list_contents([location])
@@ -368,5 +388,8 @@ class Intersection(Model):
                 self.carID += 1
                 self.schedule.add(car)
                 self.grid.place_agent(car, (xlocation, ylocation))
+
+        self.datacollector.collect(self)
+        self.emission = [0, 0, 0]
 
         self.schedule.step()

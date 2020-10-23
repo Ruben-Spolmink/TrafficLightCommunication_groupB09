@@ -1,6 +1,6 @@
 from model import Intersection
 from Portrayal import agent_portrayal
-from mesa.visualization.modules import CanvasGrid
+from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 import sys
 from mesa.visualization.UserParam import UserSettableParameter
@@ -8,6 +8,11 @@ from mesa.visualization.UserParam import UserSettableParameter
 #uncomment if there are windows issues
 #import asyncio
 #asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+co2 = ["CO2",  "#00AA00"]
+nox = ["NOx", "#880000"]
+pm =  ["PM10", "#000000"]
+
 
 settings = {"tactic": "Standard",
             "spawnrate": UserSettableParameter(
@@ -21,7 +26,7 @@ settings = {"tactic": "Standard",
             )
             }
 
-
+CO2chart = ChartModule([{"Label" : co2[0], "Color": co2[1]}])
 # Default runs with visualization
 if len(sys.argv) == 1:
     spawnrate = settings["spawnrate"]
@@ -29,7 +34,7 @@ if len(sys.argv) == 1:
     grid = CanvasGrid(
         agent_portrayal, Intersection(spawnrate, tactic).width, Intersection(spawnrate, tactic).height, 1000, 1000
     )
-    server = ModularServer(Intersection, [grid], "Intersectionmodel", settings)
+    server = ModularServer(Intersection, [grid, CO2chart], "Intersectionmodel", settings)
     server.port = 8520  # The default
     server.launch()
 elif sys.argv[1] == "Batch":
@@ -39,8 +44,9 @@ elif sys.argv[1] == "Headless":
     spawnrate = int(sys.argv[2])
     tactic = str(sys.argv[3])
     intersectionmodel = Intersection(spawnrate, tactic)
-    while 1:
+    for i in range(1000):
         intersectionmodel.step()
+
 elif sys.argv[1] == "Visualize":
     spawnrate = int(sys.argv[2])
     tactic = str(sys.argv[3])

@@ -13,9 +13,9 @@ settings = {"tactic": "Standard",
             "spawnrate": UserSettableParameter(
                 "slider",
                 "Spawnrate",
-                30,
+                5,
                 0,
-                50,
+                20,
                 1,
                 description="Choose how many agents to include in the model",
             )

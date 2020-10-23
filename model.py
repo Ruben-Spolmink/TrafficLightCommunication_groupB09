@@ -8,6 +8,7 @@ import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
 from mesa.datacollection import DataCollector
+import csv
 
 
 def reademissionvalues():
@@ -128,6 +129,10 @@ class Intersection(Model):
         self.schedule = RandomActivation(self)
         self.slowmotionrate = 0.1
         self.emissionvalues = reademissionvalues()
+        self.emissionhistory = []
+        self.emissionstep = []
+        self.travelhistory = []
+        self.travelstep = []
         [
             self.roadmap,
             self.spawns,
@@ -231,6 +236,11 @@ class Intersection(Model):
         Step function that will randomly place cars based on the spawn chance
         and will visit all the agents to perform their step function.
         """
+
+        # Clear all previous step's emission and travel time
+        self.emissionstep = []
+        self.travelstep = []
+
         # Determine intersection of most cars and where they go to
         if self.tactic == "GreenWave" and\
                 len(self.schedule.agents) > 12 * self.intersections and\
@@ -347,7 +357,7 @@ class Intersection(Model):
         for spawn in self.spawns:
             location = spawn[0]
             cell_contents = self.grid.get_cell_list_contents([location])
-            if not cell_contents and random.randint(0, 100/self.slowmotionrate) < self.spawnrate:
+            if not cell_contents and random.randint(0, int(100/self.slowmotionrate)) < self.spawnrate:
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height - 1 - int(location[1])

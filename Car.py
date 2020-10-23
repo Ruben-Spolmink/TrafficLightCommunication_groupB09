@@ -14,7 +14,7 @@ class CarAgent(Agent):
     ):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
-        self.speed = 13.9 # 50 km/h = 13.9 m/s.
+        self.speed = 8.3 # 50 km/h = 13.9 m/s.
         self.acceleration = 0.00
         self.distincell = 0 # keeps track of how far the car is in the current cell
         self.direction = direction
@@ -39,21 +39,22 @@ class CarAgent(Agent):
         # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration=-5.646
         # if speed<50 and light=green and speed<50 acceleration=6.775
         [redlight, distance] = self.hasredlight()
-        if redlight and self.speed > 0 and distance*3 > 75:
-            self.acceleration = -5.65
-        elif self.speed < 13.9:
+        if redlight and self.speed > 0 and distance*3 < 75:
+            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))
+        elif self.speed < 8.3:
             self.acceleration = 6.775
         else:
             self.acceleration = 0
-
-        self.speed = max(13.9, self.speed + self.acceleration*self.model.slowmotionrate)
+        print(self.acceleration)
+        self.speed = self.speed + self.acceleration*self.model.slowmotionrate
+        if self.speed > 8.3:
+            self.speed = 8.3
 
         if redlight and distance == 1:
             self.speed = 0
+        print(self.speed)
+        self.model.emissionhistory.append(self.emission(self.speed, self.acceleration))
 
-        self.emission(self.speed, self.acceleration)
-
-        self.distincell = (self.distincell + self.speed * self.model.slowmotionrate) % 3
         if self.distincell + self.speed * self.model.slowmotionrate >= 3:
             if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + 1)
@@ -81,6 +82,7 @@ class CarAgent(Agent):
                     self.succes = False
         elif qmove:
             self.succes = False
+        self.distincell = (self.distincell + self.speed * self.model.slowmotionrate) % 3
 
     def move_queue(self):
         """

@@ -79,6 +79,8 @@ class CarAgent(Agent):
                     self.succes = True
                 elif qmove:
                     self.succes = False
+        elif qmove:
+            self.succes = False
 
     def move_queue(self):
         """

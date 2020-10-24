@@ -123,18 +123,23 @@ class Intersection(Model):
     Cars and traffic lights are spawned here.
     """
 
-    def __init__(self, spawnrate=10, tactic="Standard"):
+    def __init__(self, spawnrate, tactic, offset):
+        # Variable parameters
         self.tactic = tactic  # [Standard, Offset, Proportional, Lookahead, GreenWave]
         self.spawnrate = spawnrate
-        self.offset = 3
-        self.spawnnumber = 4
-        self.schedule = RandomActivation(self)
+        self.offset = offset
         self.slowmotionrate = 0.1
-        self.emissionvalues = reademissionvalues()
-        self.emission = [0, 0, 0]
-        self.totalemission = [0, 0, 0]
+        self.cycletime = 60
+
+        # Value initializations
+        self.emission = [0, 0, 0] #emission per step
+        self.allemissions = [] # emission of all cars
         self.traveltime = []
         self.averagetraveltime = 0
+        self.carID = 0
+
+        # Reading roadmap and emission values
+        self.emissionvalues = reademissionvalues()
         [
             self.roadmap,
             self.spawns,
@@ -142,38 +147,53 @@ class Intersection(Model):
             self.height,
             self.cellsperlane,
             self.intersections,
-            streetlength,
-            gridsize,
+            self.streetlength,
+            self.gridsize,
         ] = readroadmap()
+
+        # Model and visualization parameters
+        self.schedule = RandomActivation(self)
         self.width = self.height
-        self.gridsize = gridsize
-        self.streetlength = streetlength
         self.grid = MultiGrid(self.width, self.height, True)
         self.running = True
+
+        # Initializing matrix which shows what cars in front of traffic lights go to what over traffic lights.
         self.tlightmatrix = np.empty((len(self.lights), len(self.lights)))
         self.tlightmatrix[:] = np.nan
         self.trafficlightlist = []
-        self.carID = 0
         self.lightcombinations = [
             ["SR", "SD", "SL", "WR"],
             ["ER", "ED", "EL", "SR"],
             ["NR", "ND", "NL", "ER"],
             ["WR", "WD", "WL", "NR"],
         ]
-        # Needed for green wave
+
+        # Data collection
+        self.datacollector = DataCollector(
+            model_reporters={"AverageTraveltime": "averagetraveltime",
+                             "CO2": lambda m: self.getco2(),
+                             "NOx": lambda m: self.getnox(),
+                             "PM10": lambda m: self.getpm(),
+                             "Emission": "emission",
+                             },
+
+            )
+
+        # Needed for green wave tactic
         self.mostcars = []
         self.goesto = []
-        self.cycletime = 60
         self.firstgreenintersection = -1
         self.secondgreenintersection = -1
         self.firstcombination = None
         self.secondcombination = None
         self.firstcycledone = 0
 
-        # Needed for lookahead
-        self.mostexpectedcars = [0, 0, 0]
+        # Needed for lookahead tactic
+        self.mostexpectedcars = [0, 0, 0] # cars,intersection,combination
 
-        self.intersectionmatrix = []  # matrix with intersectionnumbers in the right index
+        # results in list of lists with intersectionnumbers in the right place, e.g.: [[0, 1],[2,3]]
+        # Needed for the offset tactic to know which lights to offset
+        self.intersectionmatrix = []
         lastnumber = 0
         for i in range(int(math.sqrt(self.intersections))):
             tempmaptrix = []
@@ -183,21 +203,14 @@ class Intersection(Model):
             self.intersectionmatrix.append(tempmaptrix)
         self.intersectionmatrix = np.array(self.intersectionmatrix)
 
-        # Data collection
-        self.datacollector = DataCollector(
-            model_reporters={"AverageTraveltime": "averagetraveltime",
-                             "CO2": lambda m: self.getco2(),
-                             "NOx": lambda m: self.getnox(),
-                             "PM10": lambda m: self.getpm()},
-            )
-
-        # Initialize information dictionary
+        # Initialize information dictionary (which lights are suppesed to be green and how long they have been green for
         self.trafficlightinfo = {}
         for i in range(self.intersections):
             self.trafficlightinfo.update({f"intersection{i}": {"Trafficlightinfo": {},
                                                                "Timeinfo": {}}})
 
-        for i, light in enumerate(self.lights):  # Initializes traffic lights
+        # Initializes traffic lights
+        for i, light in enumerate(self.lights):
             self.trafficlightinfo[f"intersection{light[1][3]}"]["Trafficlightinfo"][f"{light[1][1:3]}"] = i
             self.trafficlightinfo[f"intersection{light[1][3]}"]["Timeinfo"].update({"Currentgreen": -1,
                                                                                       "Currenttimegreen": 0,
@@ -236,10 +249,7 @@ class Intersection(Model):
         self.grid.place_agent(LegendGreenTlightIcon("GreenTlighticon", self), (65, 69))
         self.grid.place_agent(LegendRedTlightIcon("RedTlighticon", self), (65, 70))
 
-
-
     # Get emission values
-
     def getco2(self):
 
         return self.emission[0]
@@ -250,13 +260,28 @@ class Intersection(Model):
 
     def getpm(self):
 
-        return self.emission[2
-        ]
+        return self.emission[2]
+
     def step(self):
         """
         Step function that will randomly place cars based on the spawn chance
         and will visit all the agents to perform their step function.
         """
+        # Spawn cars
+        for spawn in self.spawns:
+            location = spawn[0]
+            cell_contents = self.grid.get_cell_list_contents([location])
+            if not cell_contents and random.randint(0, int(100/self.slowmotionrate)) < self.spawnrate:
+                location = spawn[0]
+                xlocation = int(location[0])
+                ylocation = self.height - 1 - int(location[1])
+                direction = spawn[1][1]
+                lane = spawn[1][2]
+                car = CarAgent(
+                f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
+                self.carID += 1
+                self.schedule.add(car)
+                self.grid.place_agent(car, (xlocation, ylocation))
 
         # Clear all previous step's emission and travel time
         if len(self.traveltime) > 0:
@@ -313,7 +338,7 @@ class Intersection(Model):
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1
 
         if self.tactic == "Lookahead" and len(self.schedule.agents) > 12 * self.intersections:
-            self.mostexpectedcars = [0, 0, 0] # cars,intersection,combination
+            self.mostexpectedcars = [0, 0, 0]
             for i in range(self.intersections):
                 currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
                 maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
@@ -374,22 +399,8 @@ class Intersection(Model):
                             self.trafficlightinfo[f"intersection{intersection}"]["Timeinfo"]["Currentgreen"] = k
                             pass
 
-        for spawn in self.spawns:
-            location = spawn[0]
-            cell_contents = self.grid.get_cell_list_contents([location])
-            if not cell_contents and random.randint(0, int(100/self.slowmotionrate)) < self.spawnrate:
-                location = spawn[0]
-                xlocation = int(location[0])
-                ylocation = self.height - 1 - int(location[1])
-                direction = spawn[1][1]
-                lane = spawn[1][2]
-                car = CarAgent(
-                f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
-                self.carID += 1
-                self.schedule.add(car)
-                self.grid.place_agent(car, (xlocation, ylocation))
-
         self.datacollector.collect(self)
         self.emission = [0, 0, 0]
 
         self.schedule.step()
+

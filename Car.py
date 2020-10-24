@@ -14,9 +14,10 @@ class CarAgent(Agent):
     ):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
-        self.speed = 8.3 # 50 km/h = 13.9 m/s.
+        self.speed = 19.9 # 50 km/h = 13.9 m/s.
         self.acceleration = 0.00
         self.traveltime = 0
+        self.totalemission = [0, 0, 0]
         self.distincell = 0 # keeps track of how far the car is in the current cell
         self.direction = direction
         self.pos = pos
@@ -41,19 +42,20 @@ class CarAgent(Agent):
         [redlight, distance] = self.hasredlight()
         if redlight and self.speed > 0 and distance*3 < 75:
             self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))
-        elif self.speed < 8.3 or self.queue:
+        elif self.speed < 13.9 or self.queue:
             self.acceleration = 6.775
         else:
             self.acceleration = 0
         self.speed = self.speed + self.acceleration*self.model.slowmotionrate
-        if self.speed > 8.3:
-            self.speed = 8.3
+        if self.speed > 13.9:
+            self.speed = 13.9
 
         if redlight and distance == 1:
             self.speed = 0
-
-        self.model.emission = [sum(x) for x in zip(self.model.emission, self.emission(self.speed, self.acceleration))]
-        self.model.totalemission = [sum(x) for x in zip(self.model.emission, self.emission(self.speed, self.acceleration))]
+        emission = self.emission(self.speed, self.acceleration)
+        self.model.emission = [sum(x) for x in zip(self.totalemission, emission)] # Emission per step
+        self.totalemission = [sum(x) for x in zip(self.totalemission, emission)] # Total emission per car
+        self.model.totalemission = [sum(x) for x in zip(self.model.emission, emission)] # total emission for model
 
         if self.distincell + self.speed * self.model.slowmotionrate >= 3:
             if direction == "N":
@@ -66,6 +68,7 @@ class CarAgent(Agent):
                 new_position = (self.pos[0] - 1, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
                 self.model.traveltime.append(self.traveltime)
+                self.model.emission.append(self.totalemission)
                 self.model.grid.remove_agent(self)
                 self.model.schedule.remove(self)
             else:

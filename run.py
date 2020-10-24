@@ -28,8 +28,10 @@ if(userInt == 1):
 elif(userInt == 2):
     print("you chose visualization")
 
-
-settings = {"tactic": "Standard",
+tactics = ["Standard", "Offset", "Proportional", "Lookahead", "GreenWave"]
+settings = {"tactic": UserSettableParameter(
+    "choice", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
+            ),
             "spawnrate": UserSettableParameter(
                 "slider",
                 "Spawnrate",
@@ -70,8 +72,6 @@ if userInt == 1:
 if userInt == 2:
     spawnrate = 10
     tactic = "Proportional"
-    settings["spawnrate"] = spawnrate
-    settings["tactic"] = tactic
     grid = CanvasGrid(
         agent_portrayal, Intersection(spawnrate, tactic).width, Intersection(spawnrate, tactic).height, 1000, 1000
     )

@@ -37,8 +37,6 @@ class CarAgent(Agent):
          If the move couldn't be performed, it's saved again.
         """
 
-        self.traveltime += 1
-
         [redlight, distance] = self.hasredlight()
         if redlight and self.speed > 0 and distance*3 < 75:
             self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))
@@ -245,6 +243,8 @@ class CarAgent(Agent):
         There are two situations for the cars either the car is driving or the car is at the intersection
         at the intersection a queue is filled with moves for a car and a new direction is chosen.
         """
+
+        self.traveltime += 1
         cell_contents = self.model.grid.get_cell_list_contents(self.pos)
         # A check if the car is at a traffic light or not
         if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):

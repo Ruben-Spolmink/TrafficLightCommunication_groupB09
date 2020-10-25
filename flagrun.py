@@ -5,6 +5,8 @@ from mesa.visualization.ModularVisualization import ModularServer
 import sys
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.batchrunner import BatchRunner
+import pandas as pd
+from model import batchrun
 
 #uncomment if there are windows issues
 #import asyncio
@@ -37,17 +39,17 @@ settings = {
     }
 
 variableParams = {"tactic": tactics,
-                  "spawnrate": [2, 5],
+                  "spawnrate": [5],
                   "cycletime": [30]
                   }
-#, 10
+#, 10 2,
 # 60, 90
 fixedparams = {"offset": 0}
-modelreporters = {"CO2": lambda m: Intersection.getco2,
-                  "NOx": lambda m: Intersection.getnox,
-                  "PM10": lambda m: Intersection.getpm,
-                  "AverageTraveltime": lambda m: Intersection.getaveragetraveltime,
-                  "AverageEmission": lambda m: Intersection.getaverageemission}
+# modelreporters = {"CO2": lambda m: Intersection.getco2,
+#                   "NOx": lambda m: Intersection.getnox,
+#                   "PM10": lambda m: Intersection.getpm,
+#                   "AverageTraveltime": lambda m: Intersection.getaveragetraveltime,
+#                   "AverageEmission": lambda m: Intersection.getaverageemission}
 
 CO2chart = ChartModule([{"Label": co2[0], "Color": co2[1]}])
 NOXchart = ChartModule([{"Label": nox[0], "Color": nox[1]}])
@@ -65,11 +67,7 @@ if len(sys.argv) == 1:
     server.port = 8520  # The default
     server.launch()
 elif sys.argv[1] == "Batch":
-    batch = BatchRunner(Intersection, variable_parameters=variableParams, fixed_parameters=fixedparams,
-                        iterations=2, max_steps=1000, model_reporters=modelreporters)
-    batch.run_all()
-    data = batch.get_model_vars_dataframe()
-    print(data)
+    batchrun()
 elif sys.argv[1] == "Headless":
     spawnrate = int(sys.argv[2])
     tactic = str(sys.argv[3])

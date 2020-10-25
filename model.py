@@ -8,7 +8,8 @@ import math
 from Car import CarAgent
 from TrafficLight import TrafficLightAgent
 from mesa.datacollection import DataCollector
-import csv
+from mesa.batchrunner import BatchRunner
+import pandas as pd
 
 
 
@@ -174,9 +175,10 @@ class Intersection(Model):
                              "CO2": lambda m: self.getco2(),
                              "NOx": lambda m: self.getnox(),
                              "PM10": lambda m: self.getpm(),
-                             "Emission": "emission",
+                             "AverageCO2": lambda m: self.getaverageco2(),
+                             "AverageNOx": lambda m: self.getaveragenox(),
+                             "AveragePM": lambda m: self.getaveragepm()
                              },
-
             )
 
         # Needed for green wave tactic
@@ -266,12 +268,32 @@ class Intersection(Model):
 
         return self.averagetraveltime
 
-    def getaverageemission(self):
-        if len(self.averageemission):
-            return sum(self.averageemission)/len(self.averageemission)
+    def getaverageco2(self):
+        totalco2 = 0
+        if len(self.averageemission) > 0:
+            for i, emissions in enumerate(self.averageemission):
+                totalco2 += emissions[0]
+            return totalco2/len(self.averageemission)
         else:
             return 0
 
+    def getaveragenox(self):
+        totalnox = 0
+        if len(self.averageemission) > 0:
+            for i, emissions in enumerate(self.averageemission):
+                totalnox += emissions[1]
+            return totalnox/len(self.averageemission)
+        else:
+            return 0
+
+    def getaveragepm(self):
+        totalpm = 0
+        if len(self.averageemission) > 0:
+            for i, emissions in enumerate(self.averageemission):
+                totalpm += emissions[1]
+            return totalpm / len(self.averageemission)
+        else:
+            return 0
 
 
     def step(self):
@@ -416,3 +438,28 @@ class Intersection(Model):
 
         self.schedule.step()
 
+
+def batchrun():
+    # parameter lists for each parameter to be tested in batch run
+    variableParams = {"tactic": ["Standard"],
+                      "spawnrate": [5],
+                      "cycletime": [30]
+                      }
+    fixedparams = {"offset": 0}
+    br = BatchRunner(
+        Intersection,
+        variable_parameters=variableParams,
+        fixed_parameters=fixedparams,
+        iterations=1,
+        max_steps=1000,
+        model_reporters={"Data Collector": lambda m: m.datacollector},
+    )
+
+    br.run_all()
+    br_df = br.get_model_vars_dataframe()
+    br_step_data = pd.DataFrame()
+    for i in range(len(br_df["Data Collector"])):
+        if isinstance(br_df["Data Collector"][i], DataCollector):
+            i_run_data = br_df["Data Collector"][i].get_model_vars_dataframe()
+            br_step_data = br_step_data.append(i_run_data, ignore_index=True)
+    br_step_data.to_csv("BankReservesModel_Step_Data.csv")

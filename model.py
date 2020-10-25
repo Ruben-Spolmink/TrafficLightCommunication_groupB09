@@ -171,7 +171,12 @@ class Intersection(Model):
 
         # Data collection
         self.datacollector = DataCollector(
-            model_reporters={"AverageTraveltime": "averagetraveltime",
+            model_reporters={"tactic": "tactic",
+                             "Spawnrate": "spawnrate",
+                             "Offset": "offset",
+                             "Cycletime": "cycletime",
+                             "AverageTraveltime": "averagetraveltime",
+                             "Totalcars": lambda m: self.numberofcars(),
                              "CO2": lambda m: self.getco2(),
                              "NOx": lambda m: self.getnox(),
                              "PM10": lambda m: self.getpm(),
@@ -290,11 +295,13 @@ class Intersection(Model):
         totalpm = 0
         if len(self.averageemission) > 0:
             for i, emissions in enumerate(self.averageemission):
-                totalpm += emissions[1]
+                totalpm += emissions[2]
             return totalpm / len(self.averageemission)
         else:
             return 0
 
+    def numberofcars(self):
+        return len(self.schedule.agents)-12*self.intersections
 
     def step(self):
         """
@@ -442,7 +449,7 @@ class Intersection(Model):
 def batchrun():
     # parameter lists for each parameter to be tested in batch run
     variableParams = {"tactic": ["Standard"],
-                      "spawnrate": [5],
+                      "spawnrate": [5, 10],
                       "cycletime": [30]
                       }
     fixedparams = {"offset": 0}
@@ -462,4 +469,4 @@ def batchrun():
         if isinstance(br_df["Data Collector"][i], DataCollector):
             i_run_data = br_df["Data Collector"][i].get_model_vars_dataframe()
             br_step_data = br_step_data.append(i_run_data, ignore_index=True)
-    br_step_data.to_csv("BankReservesModel_Step_Data.csv")
+    br_step_data.to_csv("data.csv")

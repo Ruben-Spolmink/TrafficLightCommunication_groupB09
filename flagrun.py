@@ -16,15 +16,14 @@ co2 = ["CO2",  "#00AA00"]
 nox = ["NOx", "#880000"]
 pm = ["PM10", "#000000"]
 
-tactics = ["Standard", "Proportional"] # , "Offset" , "Lookahead", "GreenWave"
-cycletime = [30]# 60, 90
+tactics = ["Standard", "Proportional", "Offset" , "Lookahead", "GreenWave"]
 
 settings = {
-    "offset": UserSettableParameter("choice", value=1, choices=[0, 1, 2, 3], description="Set offset for offset tactic"),
+    "offset": UserSettableParameter("choice", "Offset", value=1, choices=[0, 1, 2, 3], description="Set offset for offset tactic"),
     "tactic": UserSettableParameter(
-    "choice", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
+    "choice","Tactic", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
             ),
-    "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 100, 1, description="Choose the amount of time"
+    "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 300, 1, description="Choose the amount of time"
                                                                                          "that a traffic light is green"
                                                                                          ""),
     "spawnrate": UserSettableParameter(
@@ -42,14 +41,8 @@ variableParams = {"tactic": tactics,
                   "spawnrate": [5],
                   "cycletime": [30]
                   }
-#, 10 2,
-# 60, 90
+
 fixedparams = {"offset": 0}
-# modelreporters = {"CO2": lambda m: Intersection.getco2,
-#                   "NOx": lambda m: Intersection.getnox,
-#                   "PM10": lambda m: Intersection.getpm,
-#                   "AverageTraveltime": lambda m: Intersection.getaveragetraveltime,
-#                   "AverageEmission": lambda m: Intersection.getaverageemission}
 
 CO2chart = ChartModule([{"Label": co2[0], "Color": co2[1]}])
 NOXchart = ChartModule([{"Label": nox[0], "Color": nox[1]}])
@@ -60,6 +53,7 @@ if len(sys.argv) == 1:
     spawnrate = settings["spawnrate"]
     tactic = settings["tactic"]
     offset = settings["offset"]
+    cycletime = settings["cycletime"]
     grid = CanvasGrid(
         agent_portrayal, Intersection(spawnrate, tactic, offset, cycletime).width, Intersection(spawnrate, tactic, offset, cycletime).height, 700, 700
     )
@@ -69,8 +63,9 @@ if len(sys.argv) == 1:
 elif sys.argv[1] == "Batch":
     batchrun()
 elif sys.argv[1] == "Headless":
+    offset = settings["offset"]
     spawnrate = int(sys.argv[2])
     tactic = str(sys.argv[3])
-    intersectionmodel = Intersection(spawnrate, tactic)
+    intersectionmodel = Intersection(spawnrate, tactic, offset)
     for i in range(1000):
         intersectionmodel.step()

@@ -129,7 +129,7 @@ class Intersection(Model):
         self.tactic = tactic  # [Standard, Offset, Proportional, Lookahead, GreenWave]
         self.spawnrate = spawnrate
         self.offset = offset
-        self.slowmotionrate = 0.1
+        self.slowmotionrate = 0.2
         self.cycletime = cycletime
 
         # Value initializations
@@ -335,23 +335,26 @@ class Intersection(Model):
 
             self.firstcycledone = 0
             self.mostcars = np.argmax(np.nansum(self.tlightmatrix, axis=1))
-            self.goesto = np.where(~np.isnan(self.tlightmatrix[self.mostcars]))
-            self.firstgreenintersection = self.lights[self.mostcars][1][3]
-            self.secondgreenintersection = self.lights[self.goesto[0][0]][1][3]
+            print(self.mostcars)
+            if self.mostcars:
+                self.goesto = np.where(~np.isnan(self.tlightmatrix[self.mostcars]))
+                print(self.goesto)
+                self.firstgreenintersection = self.lights[self.mostcars][1][3]
+                self.secondgreenintersection = self.lights[self.goesto[0][0]][1][3]
 
-            # Determines the direction of traffic lights
-            firstdirection = self.schedule.agents[int(self.mostcars)].direction
-            seconddirection = self.schedule.agents[self.goesto[0][0]].direction
+                # Determines the direction of traffic lights
+                firstdirection = self.schedule.agents[int(self.mostcars)].direction
+                seconddirection = self.schedule.agents[self.goesto[0][0]].direction
 
-            # Determines combinations of traffic lights that can stay green
-            for i, combination in enumerate(self.lightcombinations):
-                if firstdirection + "D" in combination:
-                    self.firstcombination = self.lightcombinations[i]
-                if seconddirection + "D" in combination:
-                    self.secondcombination = self.lightcombinations[i]
-            # If 1st part of green wave is over (so 1 cycle has been done)
-            if not ((self.schedule.steps % (self.cycletime * 2)) == 0):
-                self.firstcycledone = 1
+                # Determines combinations of traffic lights that can stay green
+                for i, combination in enumerate(self.lightcombinations):
+                    if firstdirection + "D" in combination:
+                        self.firstcombination = self.lightcombinations[i]
+                    if seconddirection + "D" in combination:
+                        self.secondcombination = self.lightcombinations[i]
+                # If 1st part of green wave is over (so 1 cycle has been done)
+                if not ((self.schedule.steps % (self.cycletime * 2)) == 0):
+                    self.firstcycledone = 1
 
         if self.tactic == "Proportional" and len(self.schedule.agents) > 12 * self.intersections:
             for i in range(self.intersections):
@@ -447,11 +450,11 @@ class Intersection(Model):
 
 
 def batchrun():
-    tactics = ["Standard", "Proportional", "Lookahead", "GreenWave"] #, "Offset"
+    tactics = ["GreenWave"] #, "Offset" , "Proportional", "Lookahead", "GreenWave"
     # parameter lists for each parameter to be tested in batch run
     variableParams = {"tactic": tactics,
                       "spawnrate": [5, 10, 20],
-                      "cycletime": [30, 60, 90]
+                      "cycletime": [60, 90, 120]
                       }
     fixedparams = {"offset": 0}
     br = BatchRunner(
@@ -470,4 +473,4 @@ def batchrun():
         if isinstance(br_df["Data Collector"][i], DataCollector):
             i_run_data = br_df["Data Collector"][i].get_model_vars_dataframe()
             br_step_data = br_step_data.append(i_run_data, ignore_index=True)
-    br_step_data.to_csv("data.csv")
+    br_step_data.to_csv("Greenwavedata.csv")

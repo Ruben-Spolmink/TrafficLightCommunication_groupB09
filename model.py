@@ -458,8 +458,8 @@ def batchrun():
         Intersection,
         variable_parameters=variableParams,
         fixed_parameters=fixedparams,
-        iterations=1,
-        max_steps=1000,
+        iterations=5,
+        max_steps=2000,
         model_reporters={"Data Collector": lambda m: m.datacollector},
     )
 

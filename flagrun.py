@@ -14,13 +14,17 @@ co2 = ["CO2",  "#00AA00"]
 nox = ["NOx", "#880000"]
 pm = ["PM10", "#000000"]
 
-tactics = ["Standard", "Offset", "Proportional", "Lookahead", "GreenWave"]
+tactics = ["Standard", "Proportional"] # , "Offset" , "Lookahead", "GreenWave"
+cycletime = [30]# 60, 90
 
 settings = {
     "offset": UserSettableParameter("choice", value=1, choices=[0, 1, 2, 3], description="Set offset for offset tactic"),
     "tactic": UserSettableParameter(
     "choice", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
             ),
+    "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 100, 1, description="Choose the amount of time"
+                                                                                         "that a traffic light is green"
+                                                                                         ""),
     "spawnrate": UserSettableParameter(
         "slider",
         "Spawnrate",
@@ -33,14 +37,21 @@ settings = {
     }
 
 variableParams = {"tactic": tactics,
-                  "spawnrate": [2, 5, 10],
+                  "spawnrate": [2, 5],
+                  "cycletime": [30]
                   }
-fixedparams = {"offset":0}
-modelreporters = {"CO2": lambda m: Intersection.getco2}
+#, 10
+# 60, 90
+fixedparams = {"offset": 0}
+modelreporters = {"CO2": lambda m: Intersection.getco2,
+                  "NOx": lambda m: Intersection.getnox,
+                  "PM10": lambda m: Intersection.getpm,
+                  "AverageTraveltime": lambda m: Intersection.getaveragetraveltime,
+                  "AverageEmission": lambda m: Intersection.getaverageemission}
 
-CO2chart = ChartModule([{"Label" : co2[0], "Color": co2[1]}])
-NOXchart = ChartModule([{"Label" : nox[0], "Color": nox[1]}])
-pmchart = ChartModule([{"Label" : pm[0], "Color": pm[1]}])
+CO2chart = ChartModule([{"Label": co2[0], "Color": co2[1]}])
+NOXchart = ChartModule([{"Label": nox[0], "Color": nox[1]}])
+pmchart = ChartModule([{"Label": pm[0], "Color": pm[1]}])
 
 # Default runs with visualization
 if len(sys.argv) == 1:
@@ -48,14 +59,14 @@ if len(sys.argv) == 1:
     tactic = settings["tactic"]
     offset = settings["offset"]
     grid = CanvasGrid(
-        agent_portrayal, Intersection(spawnrate, tactic, offset).width, Intersection(spawnrate, tactic, offset).height, 700, 700
+        agent_portrayal, Intersection(spawnrate, tactic, offset, cycletime).width, Intersection(spawnrate, tactic, offset, cycletime).height, 700, 700
     )
     server = ModularServer(Intersection, [grid, CO2chart, NOXchart, pmchart], "Intersectionmodel", settings)
     server.port = 8520  # The default
     server.launch()
 elif sys.argv[1] == "Batch":
     batch = BatchRunner(Intersection, variable_parameters=variableParams, fixed_parameters=fixedparams,
-                        iterations=10, max_steps=2000, model_reporters=modelreporters)
+                        iterations=2, max_steps=1000, model_reporters=modelreporters)
     batch.run_all()
     data = batch.get_model_vars_dataframe()
     print(data)

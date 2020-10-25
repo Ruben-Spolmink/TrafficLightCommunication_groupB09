@@ -123,20 +123,20 @@ class Intersection(Model):
     Cars and traffic lights are spawned here.
     """
 
-    def __init__(self, spawnrate, tactic, offset):
+    def __init__(self, spawnrate, tactic, offset, cycletime):
         # Variable parameters
         self.tactic = tactic  # [Standard, Offset, Proportional, Lookahead, GreenWave]
         self.spawnrate = spawnrate
         self.offset = offset
         self.slowmotionrate = 0.1
-        self.cycletime = 60
+        self.cycletime = cycletime
 
         # Value initializations
         self.emission = [0, 0, 0] #emission per step
-        self.allemissions = [] # emission of all cars
         self.traveltime = []
         self.averagetraveltime = 0
         self.carID = 0
+        self.averageemission = []
 
         # Reading roadmap and emission values
         self.emissionvalues = reademissionvalues()
@@ -261,6 +261,18 @@ class Intersection(Model):
     def getpm(self):
 
         return self.emission[2]
+
+    def getaveragetraveltime(self):
+
+        return self.averagetraveltime
+
+    def getaverageemission(self):
+        if len(self.averageemission):
+            return sum(self.averageemission)/len(self.averageemission)
+        else:
+            return 0
+
+
 
     def step(self):
         """

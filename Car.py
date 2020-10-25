@@ -14,7 +14,7 @@ class CarAgent(Agent):
     ):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
-        self.speed = 19.9 # 50 km/h = 13.9 m/s.
+        self.speed = 13.9 # 50 km/h = 13.9 m/s.
         self.acceleration = 0.00
         self.traveltime = 0
         self.totalemission = [0, 0, 0]
@@ -43,7 +43,7 @@ class CarAgent(Agent):
         if redlight and self.speed > 0 and distance*3 < 75:
             self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))
         elif self.speed < 13.9 or self.queue:
-            self.acceleration = 6.775
+            self.acceleration = 6.775 # Maximum acceleration
         else:
             self.acceleration = 0
         self.speed = self.speed + self.acceleration*self.model.slowmotionrate
@@ -53,9 +53,8 @@ class CarAgent(Agent):
         if redlight and distance == 1:
             self.speed = 0
         emission = self.emission(self.speed, self.acceleration)
-        self.model.emission = [sum(x) for x in zip(self.totalemission, emission)] # Emission per step
+        self.model.emission = [sum(x) for x in zip(self.model.emission, emission)] # Emission per step
         self.totalemission = [sum(x) for x in zip(self.totalemission, emission)] # Total emission per car
-        self.model.totalemission = [sum(x) for x in zip(self.model.emission, emission)] # total emission for model
 
         if self.distincell + self.speed * self.model.slowmotionrate >= 3:
             if direction == "N":
@@ -68,7 +67,7 @@ class CarAgent(Agent):
                 new_position = (self.pos[0] - 1, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
                 self.model.traveltime.append(self.traveltime)
-                self.model.emission.append(self.totalemission)
+                self.model.averageemission.append(self.totalemission)
                 self.model.grid.remove_agent(self)
                 self.model.schedule.remove(self)
             else:
@@ -271,8 +270,8 @@ class CarAgent(Agent):
             a = self.model.emissionvalues[key]
             emission.append(max(a[0], a[1] + a[2]*speed + a[3]*speed**2 + a[4]*acceleration + a[5]*acceleration**2 + \
                             a[6]*speed*acceleration))
-        if acceleration < -0.5:
-            emission.pop(2)
-        else:
+        if acceleration < -0.5: # Depending on formula to calculate emission
             emission.pop(1)
+        else:
+            emission.pop(2)
         return emission

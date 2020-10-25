@@ -335,10 +335,8 @@ class Intersection(Model):
 
             self.firstcycledone = 0
             self.mostcars = np.argmax(np.nansum(self.tlightmatrix, axis=1))
-            print(self.mostcars)
             if self.mostcars:
                 self.goesto = np.where(~np.isnan(self.tlightmatrix[self.mostcars]))
-                print(self.goesto)
                 self.firstgreenintersection = self.lights[self.mostcars][1][3]
                 self.secondgreenintersection = self.lights[self.goesto[0][0]][1][3]
 
@@ -450,18 +448,18 @@ class Intersection(Model):
 
 
 def batchrun():
-    tactics = ["GreenWave", "Offset" , "Proportional", "Lookahead", "GreenWave"]
+    tactics = ["Offset"] # , "Offset" , "Proportional", "Lookahead", "GreenWave"
     # parameter lists for each parameter to be tested in batch run
     variableParams = {"tactic": tactics,
                       "spawnrate": [5, 10, 20],
-                      "cycletime": [60, 90, 120]
                       }
-    fixedparams = {"offset": 0}
+    fixedparams = {"offset": 0,
+                   "cycletime": 90}
     br = BatchRunner(
         Intersection,
         variable_parameters=variableParams,
         fixed_parameters=fixedparams,
-        iterations=5,
+        iterations=10,
         max_steps=2000,
         model_reporters={"Data Collector": lambda m: m.datacollector},
     )
@@ -473,4 +471,4 @@ def batchrun():
         if isinstance(br_df["Data Collector"][i], DataCollector):
             i_run_data = br_df["Data Collector"][i].get_model_vars_dataframe()
             br_step_data = br_step_data.append(i_run_data, ignore_index=True)
-    br_step_data.to_csv("Greenwavedata.csv")
+    br_step_data.to_csv("Offsetdata.csv")

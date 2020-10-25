@@ -39,12 +39,12 @@ class CarAgent(Agent):
 
         [redlight, distance] = self.hasredlight()
         if redlight and self.speed > 0 and distance*3 < 75:
-            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))
+            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))*self.model.slowmotionrate
         elif self.speed < 13.9 or self.queue:
-            self.acceleration = 6.775 # Maximum acceleration
+            self.acceleration = 6.775*self.model.slowmotionrate # Maximum acceleration
         else:
             self.acceleration = 0
-        self.speed = self.speed + self.acceleration*self.model.slowmotionrate
+        self.speed = self.speed + self.acceleration
         if self.speed > 13.9:
             self.speed = 13.9
 
@@ -266,10 +266,11 @@ class CarAgent(Agent):
         The emissions are both measured in absolute mg/s as well as porportional to their overall emission shares.
         """
         emission = []
+        speed = speed * 3.6 # m/s to kmh
         for key in self.model.emissionvalues.keys():
             a = self.model.emissionvalues[key]
             emission.append(max(a[0], a[1] + a[2]*speed + a[3]*speed**2 + a[4]*acceleration + a[5]*acceleration**2 + \
-                            a[6]*speed*acceleration))
+                            a[6]*speed*acceleration)*self.model.slowmotionrate)
         if acceleration < -0.5: # Depending on formula to calculate emission
             emission.pop(1)
         else:

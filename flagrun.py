@@ -31,7 +31,7 @@ settings = {
         "Spawnrate",
         5,
         0,
-        10,
+        20,
         1,
         description="Choose how many agents to include in the model",
         )

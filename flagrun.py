@@ -23,7 +23,7 @@ settings = {
     "tactic": UserSettableParameter(
     "choice","Tactic", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
             ),
-    "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 300, 1, description="Choose the amount of time"
+    "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 120, 1, description="Choose the amount of time"
                                                                                          "that a traffic light is green"
                                                                                          ""),
     "spawnrate": UserSettableParameter(
@@ -31,7 +31,7 @@ settings = {
         "Spawnrate",
         5,
         0,
-        20,
+        10,
         1,
         description="Choose how many agents to include in the model",
         )

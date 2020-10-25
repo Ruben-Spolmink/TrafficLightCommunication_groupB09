@@ -26,7 +26,7 @@ class TrafficLightAgent(Agent):
             self.model.tlightmatrix[self.id, :] >= 0
         ] = (carcount / 3)
         time = self.model.schedule.time
-        if self.tactic == "Standard" or self.tactic == "Offset":
+        if self.tactic == "Offset":
             self.changecoloroffset(time, self.direction, self.lane, self.cycletime)
         elif self.tactic == "Lookahead":
             self.changecolorlookahead()

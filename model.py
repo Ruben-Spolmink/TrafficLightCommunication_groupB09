@@ -126,7 +126,7 @@ class Intersection(Model):
 
     def __init__(self, spawnrate, tactic, offset, cycletime):
         # Variable parameters
-        self.tactic = tactic  # [Standard, Offset, Proportional, Lookahead, GreenWave]
+        self.tactic = tactic  # [ Offset, Proportional, Lookahead, GreenWave]
         self.spawnrate = spawnrate
         self.offset = offset
         self.slowmotionrate = 0.2

@@ -16,12 +16,12 @@ co2 = ["CO2",  "#00AA00"]
 nox = ["NOx", "#880000"]
 pm = ["PM10", "#000000"]
 
-tactics = ["Standard", "Proportional", "Offset" , "Lookahead", "GreenWave"]
+tactics = ["Proportional", "Offset" , "Lookahead", "GreenWave"]
 
 settings = {
-    "offset": UserSettableParameter("choice", "Offset", value=1, choices=[0, 1, 2, 3], description="Set offset for offset tactic"),
+    "offset": UserSettableParameter("choice", "Offset", value=0, choices=[0, 1, 2], description="Set offset for offset tactic"),
     "tactic": UserSettableParameter(
-    "choice","Tactic", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
+    "choice","Tactic", value="Offset", choices=tactics, description="Tactics that the traffic lights use"
             ),
     "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 120, 1, description="Choose the amount of time"
                                                                                          "that a traffic light is green"

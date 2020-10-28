@@ -1,3 +1,5 @@
+import csv
+
 from mesa import Agent, Model
 import model
 from TrafficLight import TrafficLightAgent
@@ -12,7 +14,11 @@ class CarAgent(Agent):
     ):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
-        self.speed = speed
+        self.speed = 13.9 # 50 km/h = 13.9 m/s.
+        self.acceleration = 0.00
+        self.traveltime = 0
+        self.totalemission = [0, 0, 0]
+        self.distincell = 0 # keeps track of how far the car is in the current cell
         self.direction = direction
         self.pos = pos
         self.queue = []
@@ -23,35 +29,43 @@ class CarAgent(Agent):
         self.succes = True
 
     def move(self, direction, qmove):
+
         """
         The movement of the car is handled here, guided by the direction of the car.
          When a car passes a trafficlight, moves get queued up.
          In the case the move is a queued move, a check is performed.
          If the move couldn't be performed, it's saved again.
         """
-        # IN PROGRESS
-        # self.speed=self.speed/3.6
-        # self.speed=13.889
-        unit = 3 * 3.6
-        # here I need to figure out how to measure distance between car and light
-        # if car closer than 75m (25 squares) and the light is red and speed>0 acceleration-=5.646
-        # if speed=0 and light=green and speed<50 acceleration+=6.775
-        acceleration = 0
-        # move=int(self.speed/unit)
-        move = 1
-        self.speed = self.speed - move + self.speed % unit + acceleration
-        # Checks whether the car can move and what it's new position is going to be.
-        if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
 
+        [redlight, distance] = self.hasredlight()
+        if redlight and self.speed > 0 and distance*3 < 75:
+            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))*self.model.slowmotionrate
+        elif self.speed < 13.9 or self.queue:
+            self.acceleration = 6.775*self.model.slowmotionrate # Maximum acceleration
+        else:
+            self.acceleration = 0
+        self.speed = self.speed + self.acceleration
+        if self.speed > 13.9:
+            self.speed = 13.9
+
+        if redlight and distance == 1:
+            self.speed = 0
+        emission = self.emission(self.speed, self.acceleration)
+        self.model.emission = [sum(x) for x in zip(self.model.emission, emission)] # Emission per step
+        self.totalemission = [sum(x) for x in zip(self.totalemission, emission)] # Total emission per car
+
+        if self.distincell + self.speed * self.model.slowmotionrate >= 3:
             if direction == "N":
-                new_position = (self.pos[0], self.pos[1] + move)
+                new_position = (self.pos[0], self.pos[1] + 1)
             if direction == "E":
-                new_position = (self.pos[0] + move, self.pos[1])
+                new_position = (self.pos[0] + 1, self.pos[1])
             if direction == "S":
-                new_position = (self.pos[0], self.pos[1] - move)
+                new_position = (self.pos[0], self.pos[1] - 1)
             if direction == "W":
-                new_position = (self.pos[0] - move, self.pos[1])
+                new_position = (self.pos[0] - 1, self.pos[1])
             if self.model.grid.out_of_bounds((new_position[0], new_position[1])):
+                self.model.traveltime.append(self.traveltime)
+                self.model.averageemission.append(self.totalemission)
                 self.model.grid.remove_agent(self)
                 self.model.schedule.remove(self)
             else:
@@ -67,13 +81,18 @@ class CarAgent(Agent):
                     self.succes = True
                 elif qmove:
                     self.succes = False
-                    print("can't move")
+        elif qmove:
+            self.succes = False
+        self.distincell = (self.distincell + self.speed * self.model.slowmotionrate) % 3
 
     def move_queue(self):
         """
         Performing moves on basis of the queue. In the case that the move is not succesfull,
         because the car is blocked by an oter car the move will be placed back at the front of the queue
         """
+        turn_left = {"N": "W", "E": "N", "S": "E", "W": "S"}
+
+        turn_right = {"N": "E", "E": "S", "S": "W", "W": "N"}
         templist = []
         if not (self.hasredlight()[0] and self.hasredlight()[1] == 0):
             current_move = self.queue.pop(0)
@@ -90,7 +109,7 @@ class CarAgent(Agent):
 
             # if the car needs to move left
             if current_move == "LEFT":
-                self.move(self.direction, self.qmove)
+                self.move(turn_left[self.direction], self.qmove) #error here the direction should change to left
                 if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
@@ -99,7 +118,7 @@ class CarAgent(Agent):
 
             # if the car needs to take a move right
             if current_move == "RIGHT":
-                self.move(self.direction, self.qmove)
+                self.move(turn_right[self.direction], self.qmove)#error here direction should change to be right
                 if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
@@ -109,7 +128,6 @@ class CarAgent(Agent):
             if (
                 not self.queue
             ):  # after the final move in the queue the new direciton and the new lane is set as the current direction and lane
-                print("swapping lane and direction")
                 self.lane = self.swaplane
                 self.direction = self.turn
 
@@ -154,6 +172,7 @@ class CarAgent(Agent):
             if self.swaplane == "R":
                 for i in range(7):
                     self.queue.append("UP")
+                self.queue.append("RIGHT")
 
         # If the car is in the right lane set the direciton to a right turn
         if self.lane == "R":
@@ -224,6 +243,8 @@ class CarAgent(Agent):
         There are two situations for the cars either the car is driving or the car is at the intersection
         at the intersection a queue is filled with moves for a car and a new direction is chosen.
         """
+
+        self.traveltime += 1
         cell_contents = self.model.grid.get_cell_list_contents(self.pos)
         # A check if the car is at a traffic light or not
         if any(isinstance(agent, TrafficLightAgent) for agent in cell_contents):
@@ -236,3 +257,22 @@ class CarAgent(Agent):
 
         else:
             self.move_queue()
+
+    def emission(self, speed, acceleration):
+        """
+        IN PROGRESS
+
+        This function outputs a cars emissions based on the speed and acceleration and stores them in a table.
+        The emissions are both measured in absolute mg/s as well as porportional to their overall emission shares.
+        """
+        emission = []
+        speed = speed * 3.6 # m/s to kmh
+        for key in self.model.emissionvalues.keys():
+            a = self.model.emissionvalues[key]
+            emission.append(max(a[0], a[1] + a[2]*speed + a[3]*speed**2 + a[4]*acceleration + a[5]*acceleration**2 + \
+                            a[6]*speed*acceleration)*self.model.slowmotionrate)
+        if acceleration < -0.5: # Depending on formula to calculate emission
+            emission.pop(1)
+        else:
+            emission.pop(2)
+        return emission

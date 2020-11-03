@@ -32,7 +32,7 @@ Command: Run.py Batch<br/>
 The parameters for the batchrun are specified in the batcnrun function in model.py. Change the parameters 
 and the filename there in order to run the right batch. This will output the file in Data.csv which can be
 loaded in for example a pandas dataframe.
-## Parameters
+## Model parameters
 In the visualization as well as in the batch run there are 4 different parameters: 
 offset, tactic, cycletime and spawnrate.<br/>
 - Offset: Only works with the offset tactic. This gives all the adjacent trafficlights an offset in their 

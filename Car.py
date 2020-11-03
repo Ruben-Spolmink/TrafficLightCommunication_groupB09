@@ -48,6 +48,8 @@ class CarAgent(Agent):
         self.speed = self.speed + self.acceleration
         if self.speed > 13.9:
             self.speed = 13.9
+        if self.speed < 0:
+            self.speed = 0
 
         if redlight and distance == 1:
             self.speed = 0

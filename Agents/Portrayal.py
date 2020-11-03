@@ -1,6 +1,6 @@
-from Car import CarAgent
-from TrafficLight import TrafficLightAgent
-from Legend import *
+from Agents.Car import CarAgent
+from Agents.TrafficLight import TrafficLightAgent
+from Agents.Legend import *
 
 
 def agent_portrayal(agent):

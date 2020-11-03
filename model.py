@@ -1,12 +1,12 @@
-from Legend import *
+from Agents.Legend import *
 import random
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 import numpy as np
 import math
-from Car import CarAgent
-from TrafficLight import TrafficLightAgent
+from Agents.Car import CarAgent
+from Agents.TrafficLight import TrafficLightAgent
 from mesa.datacollection import DataCollector
 from mesa.batchrunner import BatchRunner
 import pandas as pd
@@ -14,7 +14,7 @@ import pandas as pd
 
 def reademissionvalues():
     emissionvalues = {}
-    with open("emission.txt") as emissionfile:
+    with open("textfiles/emission.txt") as emissionfile:
         lines = emissionfile.readlines()
         lines.pop(0)
         for line in lines:
@@ -79,7 +79,7 @@ def lightconnection(lightmatrix, trafficlightlist, intersections):
 def readroadmap():
     # Reads the generatedmap.txt and converts it into a list of lists, which can be used to locate traffic lights
     # and car spawns.
-    filepath = "Generatedmap.txt"
+    filepath = "textfiles/Generatedmap.txt"
     roadmap = []
     spawns = []
     lights = []
@@ -325,7 +325,7 @@ class Intersection(Model):
         if len(self.traveltime) > 0:
             self.averagetraveltime = sum(self.traveltime)/len(self.traveltime)
 
-        # Determine intersection of most cars and where they go to
+        # For the greenwave tactic
         if self.tactic == "GreenWave" and\
                 len(self.schedule.agents) > 12 * self.intersections and\
                 ((self.schedule.steps % (self.cycletime * 2)) == 0):
@@ -351,6 +351,7 @@ class Intersection(Model):
                 if not ((self.schedule.steps % (self.cycletime * 2)) == 0):
                     self.firstcycledone = 1
 
+        # For the proportional tactic
         if self.tactic == "Proportional" and len(self.schedule.agents) > 12 * self.intersections:
             for i in range(self.intersections):
                 currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
@@ -376,6 +377,7 @@ class Intersection(Model):
                 if currenttimegreen == maxgreentime:
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1
 
+        # For the lookahead tactic
         if self.tactic == "Lookahead" and len(self.schedule.agents) > 12 * self.intersections:
             self.mostexpectedcars = [0, 0, 0]
             for i in range(self.intersections):
@@ -446,12 +448,14 @@ class Intersection(Model):
 
 def batchrun():
     tactics = ["Offset", "Proportional", "Lookahead", "GreenWave"]
-    # parameter lists for each parameter to be tested in batch run
+    spawnrates = [1, 2, 3, 4, 5]
     variableParams = {"tactic": tactics,
-                      "spawnrate": [1, 2, 3, 4, 5],
+                      "spawnrate": spawnrates,
                       }
-    fixedparams = {"offset": 2,
+    fixedparams = {"offset": 0,
                    "cycletime": 90}
+
+    # Initialize batchrunner
     br = BatchRunner(
         Intersection,
         variable_parameters=variableParams,
@@ -461,6 +465,7 @@ def batchrun():
         model_reporters={"Data Collector": lambda m: m.datacollector},
     )
 
+    # Run batch and collect data
     br.run_all()
     br_df = br.get_model_vars_dataframe()
     br_step_data = pd.DataFrame()

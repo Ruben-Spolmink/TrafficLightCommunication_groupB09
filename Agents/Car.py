@@ -1,5 +1,5 @@
 from mesa import Agent
-from TrafficLight import TrafficLightAgent
+from Agents.TrafficLight import TrafficLightAgent
 import random
 
 

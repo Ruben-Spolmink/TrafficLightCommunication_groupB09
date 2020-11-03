@@ -1,11 +1,9 @@
 from model import Intersection
-from Portrayal import agent_portrayal
+from Agents.Portrayal import agent_portrayal
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 import sys
 from mesa.visualization.UserParam import UserSettableParameter
-from mesa.batchrunner import BatchRunner
-import pandas as pd
 from model import batchrun
 
 #uncomment if there are windows issues

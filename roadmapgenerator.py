@@ -248,13 +248,13 @@ if len(sys.argv) == 4:
     streetlength = int(sys.argv[2])
     intersections = int(sys.argv[3])
 else:
-    gridsize = 10
-    streetlength = 30000
-    intersections = 1
+    gridsize = 300
+    streetlength = 9000
+    intersections = 4
 map = generatemap(gridsize, streetlength, intersections)
 map = createspawns(map, gridsize, streetlength, intersections)
 map = createheader(map, gridsize, streetlength, intersections)
-with open("Generatedmap.txt", "w") as mapfile:
+with open("textfiles/Generatedmap.txt", "w") as mapfile:
     for row in map:
         for element in row:
             mapfile.write(str(element))

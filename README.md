@@ -1,5 +1,5 @@
 # Pollution reduction by communicating trafficlights
-![Gif of environment](intersection.gif)
+![Gif of environment](Images/intersection.gif)
 
 ## Overview
 This project investigates the pollution reduction by communicating traffic lights in a multi-intersection environment.

@@ -7,13 +7,13 @@
 - [x] car pollution - adding a way for a car to produce pollution based on acceleration and speed -> Niclas
 - [x] car deletion - after it reached it's destination the car should be removed from the map
 - [x] processing generated map - correctly processing the generatedmap
-- [ ] data collection - the data produced by the cars should be collected for reviewing -> Niclas 
-- [ ] buttons or flags for parameter values - there should either be buttons or flags to set e.g. car spawn rate
-- [ ] graphs - the data that is being collected should be visible in real time in a form of graph -> Niclas 
+- [x] data collection - the data produced by the cars should be collected for reviewing -> Niclas 
+- [x] buttons or flags for parameter values - there should either be buttons or flags to set e.g. car spawn rate
+- [x] graphs - the data that is being collected should be visible in real time in a form of graph -> Niclas 
 - [x] legend - add a legend containing the agents
-- [ ] batch running - for cross fold validation we should be able to run the same test multiple times in a row.
+- [x] batch running - for cross fold validation we should be able to run the same test multiple times in a row.
 - [x] standard traffic light cycles
 - [x] headless mode - apply headless mode to the simulation
 - [x] cars can see traffic lights
-- [ ] graphs - graphs should be added that show emission values and travel times -> Niclas 
+- [x] graphs - graphs should be added that show emission values and travel times -> Niclas 
 - [ ] when a car is not able to stop anymore, run red light

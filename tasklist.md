@@ -3,8 +3,8 @@
 - [x] Trafficlight detecting cars - trafficlights should be able to detect and count cars in their lane.
 - [x] trafficlight communication - should be able to communicate the amount of cars and the direction it has to a board or to the correct light
 - [X] car route - cars should be spawned with a "randomized" route that they follow
-- [ ] car characteristics - at first hard coded, but later randomized. car should have values for the speed/accelaration/etc one idea is that grid is translated to me
-- [ ] car pollution - adding a way for a car to produce pollution based on acceleration and speed -> Niclas
+- [x] car characteristics - at first hard coded, but later randomized. car should have values for the speed/accelaration/etc one idea is that grid is translated to me
+- [x] car pollution - adding a way for a car to produce pollution based on acceleration and speed -> Niclas
 - [x] car deletion - after it reached it's destination the car should be removed from the map
 - [x] processing generated map - correctly processing the generatedmap
 - [ ] data collection - the data produced by the cars should be collected for reviewing -> Niclas 
@@ -13,6 +13,7 @@
 - [x] legend - add a legend containing the agents
 - [ ] batch running - for cross fold validation we should be able to run the same test multiple times in a row.
 - [x] standard traffic light cycles
-- [ ] headless mode - apply headless mode to the simulation
+- [x] headless mode - apply headless mode to the simulation
 - [x] cars can see traffic lights
 - [ ] graphs - graphs should be added that show emission values and travel times -> Niclas 
+- [ ] when a car is not able to stop anymore, run red light

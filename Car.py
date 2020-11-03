@@ -16,6 +16,7 @@ class CarAgent(Agent):
         self.model = intersectionmodel
         self.speed = 13.9 # 50 km/h = 13.9 m/s.
         self.acceleration = 0.00
+        self.accelerationvalue = 1.25 # accelerates with 1.25 m/s^2 (Wang et al. 2004)
         self.traveltime = 0
         self.totalemission = [0, 0, 0]
         self.distincell = 0 # keeps track of how far the car is in the current cell
@@ -39,9 +40,9 @@ class CarAgent(Agent):
 
         [redlight, distance] = self.hasredlight()
         if redlight and self.speed > 0 and distance*3 < 75:
-            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))*self.model.slowmotionrate
+            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))*self.model.slowmotionrate # Emergency brake or calculated brake
         elif self.speed < 13.9 or self.queue:
-            self.acceleration = 6.775*self.model.slowmotionrate # Maximum acceleration
+            self.acceleration = self.accelerationvalue*self.model.slowmotionrate
         else:
             self.acceleration = 0
         self.speed = self.speed + self.acceleration

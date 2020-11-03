@@ -12,8 +12,6 @@ from mesa.batchrunner import BatchRunner
 import pandas as pd
 
 
-
-
 def reademissionvalues():
     emissionvalues = {}
     with open("emission.txt") as emissionfile:
@@ -310,12 +308,7 @@ class Intersection(Model):
         for spawn in self.spawns:
             location = spawn[0]
             cell_contents = self.grid.get_cell_list_contents([location])
-            if cell_contents:
-                print(location)
-                print(self.grid.get_cell_list_contents([location]))
-                print(self.grid.get_cell_list_contents([location])[0].traveltime )
-            if cell_contents and self.grid.get_cell_list_contents([location])[0].traveltime > 5:
-                print("Car can't be spawned, stuck")
+
             if not cell_contents and random.randint(0, int(100/self.slowmotionrate)) < self.spawnrate:
                 location = spawn[0]
                 xlocation = int(location[0])
@@ -452,18 +445,18 @@ class Intersection(Model):
 
 
 def batchrun():
-    tactics = ["GreenWave"] # , "Offset" , "Proportional", "Lookahead", "GreenWave"
+    tactics = ["Offset"] # , "Offset" , "Proportional", "Lookahead", "GreenWave"
     # parameter lists for each parameter to be tested in batch run
     variableParams = {"tactic": tactics,
-                      "spawnrate": [10],
+                      "spawnrate": [1, 2, 3, 4, 5],
                       }
-    fixedparams = {"offset": 0,
+    fixedparams = {"offset": 2,
                    "cycletime": 90}
     br = BatchRunner(
         Intersection,
         variable_parameters=variableParams,
         fixed_parameters=fixedparams,
-        iterations=10,
+        iterations=1,
         max_steps=50000,
         model_reporters={"Data Collector": lambda m: m.datacollector},
     )
@@ -475,4 +468,4 @@ def batchrun():
         if isinstance(br_df["Data Collector"][i], DataCollector):
             i_run_data = br_df["Data Collector"][i].get_model_vars_dataframe()
             br_step_data = br_step_data.append(i_run_data, ignore_index=True)
-    br_step_data.to_csv("Greenwavedata10.csv")
+    br_step_data.to_csv("./Data/Offsetworse10.csv")

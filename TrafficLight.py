@@ -100,7 +100,6 @@ class TrafficLightAgent(Agent):
 
     def changecolorgreenwave(self, time, direction, lane, cycletime):
         """Changes color of the traffic lights"""
-
         combi = direction + lane
         timeperiod = time % (cycletime * 4)
         self.trafficColor = "red"

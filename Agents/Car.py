@@ -1,7 +1,4 @@
-import csv
-
-from mesa import Agent, Model
-import model
+from mesa import Agent
 from TrafficLight import TrafficLightAgent
 import random
 

@@ -4,6 +4,9 @@ from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 import sys
 from mesa.visualization.UserParam import UserSettableParameter
+from mesa.batchrunner import BatchRunner
+import pandas as pd
+from model import batchrun
 
 #uncomment if there are windows issues
 #import asyncio
@@ -11,71 +14,58 @@ from mesa.visualization.UserParam import UserSettableParameter
 
 co2 = ["CO2",  "#00AA00"]
 nox = ["NOx", "#880000"]
-pm =  ["PM10", "#000000"]
+pm = ["PM10", "#000000"]
 
-print("Hello welcome to traffic")
-print("We have two options either (1)headless for running the simulation and get the data or (2)visualization to be see the model and interact")
-userInput = input("1 for headless \n2 for visualization : ")
-userInt = int(userInput)
-if(userInt == 1):
-    print("you chose headless")
-    userSpawn = int(input("Please enter the spawnrate : "))
-    print("There are 3 tactics to choose from: \n(1)bla bla, (2)bla bla, (3)bla bla")
-    userTactic = input("Please enter the tactic you want to use for the traffic lights : ")
-    userTick = int(input("Please enter the number of steps the model has to perform : "))
-    userBatch = int(input("Please enter the amount of batches you want to run : "))
+tactics = ["Proportional", "Offset" , "Lookahead", "GreenWave"]
 
-elif(userInt == 2):
-    print("you chose visualization")
-
-tactics = ["Standard", "Offset", "Proportional", "Lookahead", "GreenWave"]
-settings = {"tactic": UserSettableParameter(
-    "choice", value="Standard", choices=tactics, description="Tactics that the traffic lights use"
+settings = {
+    "offset": UserSettableParameter("choice", "Offset", value=0, choices=[0, 1, 2], description="Set offset for offset tactic"),
+    "tactic": UserSettableParameter(
+    "choice","Tactic", value="Offset", choices=tactics, description="Tactics that the traffic lights use"
             ),
-            "spawnrate": UserSettableParameter(
-                "slider",
-                "Spawnrate",
-                5,
-                0,
-                20,
-                1,
-                description="Choose how many agents to include in the model",
-            )
-            }
+    "cycletime": UserSettableParameter("slider", "Cycletime", 60, 0, 120, 1, description="Choose the amount of time"
+                                                                                         "that a traffic light is green"
+                                                                                         ""),
+    "spawnrate": UserSettableParameter(
+        "slider",
+        "Spawnrate",
+        5,
+        0,
+        20,
+        1,
+        description="Choose how many agents to include in the model",
+        )
+    }
 
-CO2chart = ChartModule([{"Label" : co2[0], "Color": co2[1]}])
+variableParams = {"tactic": tactics,
+                  "spawnrate": [5],
+                  "cycletime": [30]
+                  }
+
+fixedparams = {"offset": 0}
+
+CO2chart = ChartModule([{"Label": co2[0], "Color": co2[1]}])
+NOXchart = ChartModule([{"Label": nox[0], "Color": nox[1]}])
+pmchart = ChartModule([{"Label": pm[0], "Color": pm[1]}])
+
 # Default runs with visualization
-"""
-if userInt == 1:
+if len(sys.argv) == 1:
     spawnrate = settings["spawnrate"]
     tactic = settings["tactic"]
+    offset = settings["offset"]
+    cycletime = settings["cycletime"]
     grid = CanvasGrid(
-        agent_portrayal, Intersection(spawnrate, tactic).width, Intersection(spawnrate, tactic).height, 1000, 1000
+        agent_portrayal, Intersection(spawnrate, tactic, offset, cycletime).width, Intersection(spawnrate, tactic, offset, cycletime).height, 700, 700
     )
-    server = ModularServer(Intersection, [grid, CO2chart], "Intersectionmodel", settings)
+    server = ModularServer(Intersection, [grid, CO2chart, NOXchart, pmchart], "Intersectionmodel", settings)
     server.port = 8520  # The default
     server.launch()
-"""
-"""
 elif sys.argv[1] == "Batch":
-    pass
-    # batchrun
-"""
-if userInt == 1:
-    spawnrate = userSpawn
-    tactic = userTactic
-    for i in range(userBatch):
-        intersectionmodel = Intersection(spawnrate, tactic)
-        for j in range(userTick):
-            intersectionmodel.step()
-
-if userInt == 2:
-    spawnrate = 10
-    tactic = "Proportional"
-    grid = CanvasGrid(
-        agent_portrayal, Intersection(spawnrate, tactic).width, Intersection(spawnrate, tactic).height, 1000, 1000
-    )
-    #server = ModularServer(Intersection, [grid], "Intersectionmodel", settings)
-    server = ModularServer(Intersection, [grid, CO2chart], "Intersectionmodel", settings)
-    server.port = 8520  # The default
-    server.launch()
+    batchrun()
+elif sys.argv[1] == "Headless":
+    offset = settings["offset"]
+    spawnrate = int(sys.argv[2])
+    tactic = str(sys.argv[3])
+    intersectionmodel = Intersection(spawnrate, tactic, offset)
+    for i in range(1000):
+        intersectionmodel.step()

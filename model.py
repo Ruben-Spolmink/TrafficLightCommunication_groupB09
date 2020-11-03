@@ -445,7 +445,7 @@ class Intersection(Model):
 
 
 def batchrun():
-    tactics = ["Offset"] # , "Offset" , "Proportional", "Lookahead", "GreenWave"
+    tactics = ["Offset", "Proportional", "Lookahead", "GreenWave"]
     # parameter lists for each parameter to be tested in batch run
     variableParams = {"tactic": tactics,
                       "spawnrate": [1, 2, 3, 4, 5],

@@ -30,6 +30,8 @@ def agent_portrayal(agent):
         portrayal["h"] = "0.5"
         portrayal["Layer"] = "1"
         return portrayal
+
+    # Icons for the legend
     elif isinstance(agent, LegendCarIcon):
         portrayal["Shape"] = "car.png"
         portrayal["Color"] = "black"

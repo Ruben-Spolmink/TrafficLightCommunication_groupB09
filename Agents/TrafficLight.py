@@ -3,10 +3,24 @@ import numpy as np
 
 
 class TrafficLightAgent(Agent):
-    """Class for traffic lights. The cars in front are calculated and the messageboard is updated"""
+    """Class for traffic light agents. The number of cars are counted and sent to the messageboard.
+    the colors are changed based on either the time or a dictionary from model.py which determines what lights should
+    turn green."""
 
-    def __init__(self, name, intersectionmodel, trafficColor, direction, lane, number, intersectionnumber, tactic,
-                 offset, intersectionindex, cycletime):
+    def __init__(
+        self,
+        name,
+        intersectionmodel,
+        trafficColor,
+        direction,
+        lane,
+        number,
+        intersectionnumber,
+        tactic,
+        offset,
+        intersectionindex,
+        cycletime,
+    ):
         super().__init__(name, intersectionmodel)
         self.offset = offset
         self.intersectionnumber = intersectionnumber
@@ -34,9 +48,9 @@ class TrafficLightAgent(Agent):
             self.changecolorgreenwave(time, self.direction, self.lane, self.cycletime)
         elif self.tactic == "Proportional":
             self.changecolorproportion()
-        else :
+        else:
             print("Tactic not specified")
-            assert()
+            assert ()
 
     def carsinfront(self):
         """Calculates the number of cars in front of the traffic light."""
@@ -69,7 +83,7 @@ class TrafficLightAgent(Agent):
         return infront - 1  # traffic light counts itself
 
     def changecoloroffset(self, time, direction, lane, cycletime):
-        """Changes color of the traffic lights"""
+        """Changes color of the traffic lights for the baseline tactic"""
         combi = direction + lane
         timeperiod = time % (cycletime * 4)
         self.trafficColor = "red"
@@ -99,14 +113,16 @@ class TrafficLightAgent(Agent):
             self.trafficColor = "green"
 
     def changecolorgreenwave(self, time, direction, lane, cycletime):
-        """Changes color of the traffic lights"""
+        """Changes color of the traffic lights for the greenwave tactic"""
         combi = direction + lane
         timeperiod = time % (cycletime * 4)
         self.trafficColor = "red"
 
         # If not part of green wave or first cycle is done do usual stuff
-        if (int(self.intersectionnumber) != int(self.model.firstgreenintersection) or self.model.firstcycledone) and \
-            int(self.intersectionnumber) != int(self.model.secondgreenintersection):
+        if (
+            int(self.intersectionnumber) != int(self.model.firstgreenintersection)
+            or self.model.firstcycledone
+        ) and int(self.intersectionnumber) != int(self.model.secondgreenintersection):
             if self.intersectiony % 2 == self.intersectionx % 2:
                 offset = self.offset
             else:
@@ -133,30 +149,44 @@ class TrafficLightAgent(Agent):
                 self.trafficColor = "green"
         # Else turn green if part of the right combi of lights
         else:
-            if combi in self.model.firstcombination and \
-                    int(self.intersectionnumber) == int(self.model.firstgreenintersection) and\
-                    timeperiod % cycletime > 5:
+            if (
+                combi in self.model.firstcombination
+                and int(self.intersectionnumber)
+                == int(self.model.firstgreenintersection)
+                and timeperiod % cycletime > 5
+            ):
                 self.trafficColor = "green"
-            if combi in self.model.secondcombination and \
-                    int(self.intersectionnumber) == int(self.model.secondgreenintersection):
+            if combi in self.model.secondcombination and int(
+                self.intersectionnumber
+            ) == int(self.model.secondgreenintersection):
                 if self.model.firstcycledone:
                     self.trafficColor = "green"
                 elif timeperiod % cycletime > 5:
                     self.trafficColor = "green"
 
     def changecolorproportion(self):
+        """Changes color of the traffic lights for the proportional tactic"""
         self.trafficColor = "red"
-        if self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"] != -1:
-            lightcombi = self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"]
-            if(self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
+        if (
+            self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"][
+                "Timeinfo"
+            ]["Currentgreen"]
+            != -1
+        ):
+            lightcombi = self.model.trafficlightinfo[
+                f"intersection{int(self.intersectionnumber)}"
+            ]["Timeinfo"]["Currentgreen"]
+            if (self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
                 self.trafficColor = "green"
 
     def changecolorlookahead(self):
+        """Changes color of the traffic lights for the lookahead tactic"""
         self.trafficColor = "red"
-        if not self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Allred"]:
-            lightcombi = self.model.trafficlightinfo[f"intersection{int(self.intersectionnumber)}"]["Timeinfo"]["Currentgreen"]
-            if(self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
+        if not self.model.trafficlightinfo[
+            f"intersection{int(self.intersectionnumber)}"
+        ]["Timeinfo"]["Allred"]:
+            lightcombi = self.model.trafficlightinfo[
+                f"intersection{int(self.intersectionnumber)}"
+            ]["Timeinfo"]["Currentgreen"]
+            if (self.direction + self.lane) in self.model.lightcombinations[lightcombi]:
                 self.trafficColor = "green"
-
-
-

@@ -6,17 +6,15 @@ import random
 class CarAgent(Agent):
     """Class for cars, movement and vision of cars are handled here."""
 
-    def __init__(
-        self, name, intersectionmodel, speed, direction, lane, pos, streetlength
-    ):
+    def __init__(self, name, intersectionmodel, direction, lane, pos):
         super().__init__(name, intersectionmodel)
         self.model = intersectionmodel
-        self.speed = 13.9 # 50 km/h = 13.9 m/s.
+        self.speed = 13.9  # 50 km/h = 13.9 m/s.
         self.acceleration = 0.00
-        self.accelerationvalue = 1.25 # accelerates with 1.25 m/s^2 (Wang et al. 2004)
+        self.accelerationvalue = 1.25  # accelerates with 1.25 m/s^2 (Wang et al. 2004)
         self.traveltime = 0
-        self.totalemission = [0, 0, 0]
-        self.distincell = 0 # keeps track of how far the car is in the current cell
+        self.totalemission = [0, 0, 0]  # CO2, NOX, PM10
+        self.distincell = 0  # keeps track of how far the car is in the current cell
         self.direction = direction
         self.pos = pos
         self.queue = []
@@ -36,13 +34,19 @@ class CarAgent(Agent):
         """
 
         [redlight, distance] = self.hasredlight()
-        if redlight and self.speed > 0 and distance*3 < 75:
-            self.acceleration = max(-5.65, -self.speed/(distance*3/self.speed))*self.model.slowmotionrate # Emergency brake or calculated brake
+
+        # Decelleration in front of red light
+        if redlight and self.speed > 0 and distance * 3 < 75:
+            self.acceleration = (
+                max(-5.65, -self.speed / (distance * 3 / self.speed))
+                * self.model.slowmotionrate
+            )  # Emergency brake or calculated brake
         elif self.speed < 13.9 or self.queue:
-            self.acceleration = self.accelerationvalue*self.model.slowmotionrate
+            self.acceleration = self.accelerationvalue * self.model.slowmotionrate
         else:
             self.acceleration = 0
         self.speed = self.speed + self.acceleration
+        # Cap the speed to 0-13.9 m/s
         if self.speed > 13.9:
             self.speed = 13.9
         if self.speed < 0:
@@ -50,10 +54,17 @@ class CarAgent(Agent):
 
         if redlight and distance == 1:
             self.speed = 0
-        emission = self.emission(self.speed, self.acceleration)
-        self.model.emission = [sum(x) for x in zip(self.model.emission, emission)] # Emission per step
-        self.totalemission = [sum(x) for x in zip(self.totalemission, emission)] # Total emission per car
 
+        # Calculate emission [CO2, NOX, PM10]
+        emission = self.emission(self.speed, self.acceleration)
+        self.model.emission = [
+            sum(x) for x in zip(self.model.emission, emission)
+        ]  # Emission per step
+        self.totalemission = [
+            sum(x) for x in zip(self.totalemission, emission)
+        ]  # Total emission per car
+
+        # Choose direction to move to and remove if off the grid
         if self.distincell + self.speed * self.model.slowmotionrate >= 3:
             if direction == "N":
                 new_position = (self.pos[0], self.pos[1] + 1)
@@ -109,7 +120,9 @@ class CarAgent(Agent):
 
             # if the car needs to move left
             if current_move == "LEFT":
-                self.move(turn_left[self.direction], self.qmove) #error here the direction should change to left
+                self.move(
+                    turn_left[self.direction], self.qmove
+                )  # error here the direction should change to left
                 if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
@@ -118,7 +131,9 @@ class CarAgent(Agent):
 
             # if the car needs to take a move right
             if current_move == "RIGHT":
-                self.move(turn_right[self.direction], self.qmove)#error here direction should change to be right
+                self.move(
+                    turn_right[self.direction], self.qmove
+                )  # error here direction should change to be right
                 if not (self.succes):
                     templist.append(current_move)
                     templist.extend(self.queue)
@@ -260,18 +275,26 @@ class CarAgent(Agent):
 
     def emission(self, speed, acceleration):
         """
-        IN PROGRESS
-
-        This function outputs a cars emissions based on the speed and acceleration and stores them in a table.
-        The emissions are both measured in absolute mg/s as well as porportional to their overall emission shares.
+        This function outputs a cars emissions based on the speed and acceleration.
+        The emissions are both measured grams.
         """
         emission = []
-        speed = speed * 3.6 # m/s to kmh
+        speed = speed * 3.6  # m/s to kmh
         for key in self.model.emissionvalues.keys():
             a = self.model.emissionvalues[key]
-            emission.append(max(a[0], a[1] + a[2]*speed + a[3]*speed**2 + a[4]*acceleration + a[5]*acceleration**2 + \
-                            a[6]*speed*acceleration)*self.model.slowmotionrate)
-        if acceleration < -0.5: # Depending on formula to calculate emission
+            emission.append(
+                max(
+                    a[0],
+                    a[1]
+                    + a[2] * speed
+                    + a[3] * speed ** 2
+                    + a[4] * acceleration
+                    + a[5] * acceleration ** 2
+                    + a[6] * speed * acceleration,
+                )
+                * self.model.slowmotionrate
+            )
+        if acceleration < -0.5:  # Depending on formula to calculate emission
             emission.pop(1)
         else:
             emission.pop(2)

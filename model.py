@@ -13,6 +13,7 @@ import pandas as pd
 
 
 def reademissionvalues():
+    """Reads the emission values from emission.txt"""
     emissionvalues = {}
     with open("textfiles/emission.txt") as emissionfile:
         lines = emissionfile.readlines()
@@ -25,8 +26,8 @@ def reademissionvalues():
 
 
 def lightconnection(lightmatrix, trafficlightlist, intersections):
-    # Creates a np array where all 0's are connections between traffic lights (what traffic light sends car to
-    # what trafic light).
+    """Creates a np array where all 0's are connections between traffic lights (what traffic light sends car to
+    what trafic light)."""
     for trafficlightfrom in trafficlightlist:
         direction = trafficlightfrom[0][1:3]
         intersection = int(trafficlightfrom[0][3])
@@ -77,8 +78,8 @@ def lightconnection(lightmatrix, trafficlightlist, intersections):
 
 
 def readroadmap():
-    # Reads the generatedmap.txt and converts it into a list of lists, which can be used to locate traffic lights
-    # and car spawns.
+    """Reads the generatedmap.txt and converts it into a list of lists, which can be used to locate traffic lights
+    # and car spawns."""
     filepath = "textfiles/Generatedmap.txt"
     roadmap = []
     spawns = []
@@ -129,7 +130,7 @@ class Intersection(Model):
         self.cycletime = cycletime
 
         # Value initializations
-        self.emission = [0, 0, 0] #emission per step
+        self.emission = [0, 0, 0]  # emission per step
         self.traveltime = []
         self.averagetraveltime = 0
         self.carID = 0
@@ -167,20 +168,21 @@ class Intersection(Model):
 
         # Data collection
         self.datacollector = DataCollector(
-            model_reporters={"tactic": "tactic",
-                             "Spawnrate": "spawnrate",
-                             "Offset": "offset",
-                             "Cycletime": "cycletime",
-                             "AverageTraveltime": "averagetraveltime",
-                             "Totalcars": lambda m: self.numberofcars(),
-                             "CO2": lambda m: self.getco2(),
-                             "NOx": lambda m: self.getnox(),
-                             "PM10": lambda m: self.getpm(),
-                             "AverageCO2": lambda m: self.getaverageco2(),
-                             "AverageNOx": lambda m: self.getaveragenox(),
-                             "AveragePM": lambda m: self.getaveragepm()
-                             },
-            )
+            model_reporters={
+                "tactic": "tactic",
+                "Spawnrate": "spawnrate",
+                "Offset": "offset",
+                "Cycletime": "cycletime",
+                "AverageTraveltime": "averagetraveltime",
+                "Totalcars": lambda m: self.numberofcars(),
+                "CO2": lambda m: self.getco2(),
+                "NOx": lambda m: self.getnox(),
+                "PM10": lambda m: self.getpm(),
+                "AverageCO2": lambda m: self.getaverageco2(),
+                "AverageNOx": lambda m: self.getaveragenox(),
+                "AveragePM": lambda m: self.getaveragepm(),
+            },
+        )
 
         # Needed for green wave tactic
         self.mostcars = []
@@ -192,7 +194,7 @@ class Intersection(Model):
         self.firstcycledone = 0
 
         # Needed for lookahead tactic
-        self.mostexpectedcars = [0, 0, 0] # cars,intersection,combination
+        self.mostexpectedcars = [0, 0, 0]  # cars,intersection,combination
 
         # results in list of lists with intersectionnumbers in the right place, e.g.: [[0, 1],[2,3]]
         # Needed for the offset tactic to know which lights to offset
@@ -209,16 +211,23 @@ class Intersection(Model):
         # Initialize information dictionary (which lights are suppesed to be green and how long they have been green for
         self.trafficlightinfo = {}
         for i in range(self.intersections):
-            self.trafficlightinfo.update({f"intersection{i}": {"Trafficlightinfo": {},
-                                                               "Timeinfo": {}}})
+            self.trafficlightinfo.update(
+                {f"intersection{i}": {"Trafficlightinfo": {}, "Timeinfo": {}}}
+            )
 
         # Initializes traffic lights
         for i, light in enumerate(self.lights):
-            self.trafficlightinfo[f"intersection{light[1][3]}"]["Trafficlightinfo"][f"{light[1][1:3]}"] = i
-            self.trafficlightinfo[f"intersection{light[1][3]}"]["Timeinfo"].update({"Currentgreen": -1,
-                                                                                      "Currenttimegreen": 0,
-                                                                                      "Maxtimegreen": 0,
-                                                                                      "Allred": 1})
+            self.trafficlightinfo[f"intersection{light[1][3]}"]["Trafficlightinfo"][
+                f"{light[1][1:3]}"
+            ] = i
+            self.trafficlightinfo[f"intersection{light[1][3]}"]["Timeinfo"].update(
+                {
+                    "Currentgreen": -1,
+                    "Currenttimegreen": 0,
+                    "Maxtimegreen": 0,
+                    "Allred": 1,
+                }
+            )
             intersectionnumber = int(light[1][3])
             intersectiony = np.where(self.intersectionmatrix == intersectionnumber)[0]
             intersectionx = np.where(self.intersectionmatrix == intersectionnumber)[1]
@@ -274,7 +283,7 @@ class Intersection(Model):
         if len(self.averageemission) > 0:
             for i, emissions in enumerate(self.averageemission):
                 totalco2 += emissions[0]
-            return totalco2/len(self.averageemission)
+            return totalco2 / len(self.averageemission)
         else:
             return 0
 
@@ -283,7 +292,7 @@ class Intersection(Model):
         if len(self.averageemission) > 0:
             for i, emissions in enumerate(self.averageemission):
                 totalnox += emissions[1]
-            return totalnox/len(self.averageemission)
+            return totalnox / len(self.averageemission)
         else:
             return 0
 
@@ -297,7 +306,7 @@ class Intersection(Model):
             return 0
 
     def numberofcars(self):
-        return len(self.schedule.agents)-12*self.intersections
+        return len(self.schedule.agents) - 12 * self.intersections
 
     def step(self):
         """
@@ -309,26 +318,38 @@ class Intersection(Model):
             location = spawn[0]
             cell_contents = self.grid.get_cell_list_contents([location])
 
-            if not cell_contents and random.randint(0, int(100/self.slowmotionrate)) < self.spawnrate:
+            if (
+                not cell_contents
+                and random.randint(0, int(100 / self.slowmotionrate)) < self.spawnrate
+            ):
                 location = spawn[0]
                 xlocation = int(location[0])
                 ylocation = self.height - 1 - int(location[1])
                 direction = spawn[1][1]
                 lane = spawn[1][2]
                 car = CarAgent(
-                f"car{self.carID}", self, 50, direction, lane, [xlocation, ylocation], self.streetlength)
+                    f"car{self.carID}",
+                    self,
+                    50,
+                    direction,
+                    lane,
+                    [xlocation, ylocation],
+                    self.streetlength,
+                )
                 self.carID += 1
                 self.schedule.add(car)
                 self.grid.place_agent(car, (xlocation, ylocation))
 
         # Clear all previous step's emission and travel time
         if len(self.traveltime) > 0:
-            self.averagetraveltime = sum(self.traveltime)/len(self.traveltime)
+            self.averagetraveltime = sum(self.traveltime) / len(self.traveltime)
 
         # For the greenwave tactic
-        if self.tactic == "GreenWave" and\
-                len(self.schedule.agents) > 12 * self.intersections and\
-                ((self.schedule.steps % (self.cycletime * 2)) == 0):
+        if (
+            self.tactic == "GreenWave"
+            and len(self.schedule.agents) > 12 * self.intersections
+            and ((self.schedule.steps % (self.cycletime * 2)) == 0)
+        ):
 
             self.firstcycledone = 0
             self.mostcars = np.argmax(np.nansum(self.tlightmatrix, axis=1))
@@ -352,16 +373,31 @@ class Intersection(Model):
                     self.firstcycledone = 1
 
         # For the proportional tactic
-        if self.tactic == "Proportional" and len(self.schedule.agents) > 12 * self.intersections:
+        if (
+            self.tactic == "Proportional"
+            and len(self.schedule.agents) > 12 * self.intersections
+        ):
             for i in range(self.intersections):
-                currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
-                maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
-                self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = currenttimegreen + 1
+                currenttimegreen = self.trafficlightinfo[f"intersection{i}"][
+                    "Timeinfo"
+                ]["Currenttimegreen"]
+                maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                    "Maxtimegreen"
+                ]
+                self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                    "Currenttimegreen"
+                ] = (currenttimegreen + 1)
                 if currenttimegreen > maxgreentime + 6:
                     carsinfront = np.nansum(self.tlightmatrix, axis=1)
                     totalcars = [0, 0, 0, 0]
-                    for key in self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"].keys():
-                        trafficlight = int(self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"][key])
+                    for key in self.trafficlightinfo[f"intersection{i}"][
+                        "Trafficlightinfo"
+                    ].keys():
+                        trafficlight = int(
+                            self.trafficlightinfo[f"intersection{i}"][
+                                "Trafficlightinfo"
+                            ][key]
+                        )
                         cars = carsinfront[trafficlight]
                         for j, combi in enumerate(self.lightcombinations):
                             if key in combi:
@@ -369,60 +405,98 @@ class Intersection(Model):
                     # No cars? pick regular timeschedule
                     if sum(totalcars) == 0:
                         totalcars = [1, 1, 1, 1]
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = \
-                        totalcars.index(max(totalcars))
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"] = \
-                       max(totalcars)/(sum(totalcars)/4)*self.cycletime
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = 0
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Currentgreen"
+                    ] = totalcars.index(max(totalcars))
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Maxtimegreen"
+                    ] = (max(totalcars) / (sum(totalcars) / 4) * self.cycletime)
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Currenttimegreen"
+                    ] = 0
                 if currenttimegreen == maxgreentime:
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = -1
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Currentgreen"
+                    ] = -1
 
         # For the lookahead tactic
-        if self.tactic == "Lookahead" and len(self.schedule.agents) > 12 * self.intersections:
+        if (
+            self.tactic == "Lookahead"
+            and len(self.schedule.agents) > 12 * self.intersections
+        ):
             self.mostexpectedcars = [0, 0, 0]
             for i in range(self.intersections):
-                currenttimegreen = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"]
-                maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"]
-                self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = currenttimegreen + 1
+                currenttimegreen = self.trafficlightinfo[f"intersection{i}"][
+                    "Timeinfo"
+                ]["Currenttimegreen"]
+                maxgreentime = self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                    "Maxtimegreen"
+                ]
+                self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                    "Currenttimegreen"
+                ] = (currenttimegreen + 1)
                 if currenttimegreen > maxgreentime + 6:
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Allred"] = 0
                     carsexpected = np.nansum(self.tlightmatrix, axis=0)
                     carsinfront = np.nansum(self.tlightmatrix, axis=1)
                     totalcars = [0, 0, 0, 0]
                     # For every direction + lane in intersection
-                    for key in self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"].keys():
-                        trafficlight = int(self.trafficlightinfo[f"intersection{i}"]["Trafficlightinfo"][key])
+                    for key in self.trafficlightinfo[f"intersection{i}"][
+                        "Trafficlightinfo"
+                    ].keys():
+                        trafficlight = int(
+                            self.trafficlightinfo[f"intersection{i}"][
+                                "Trafficlightinfo"
+                            ][key]
+                        )
                         cars = carsinfront[trafficlight]
                         # For every lightcombination
                         for j, combi in enumerate(self.lightcombinations):
                             if key in combi:
-                                totalcars[j] = totalcars[j] + cars + carsexpected[trafficlight]
+                                totalcars[j] = (
+                                    totalcars[j] + cars + carsexpected[trafficlight]
+                                )
                                 if totalcars[j] > self.mostexpectedcars[0]:
                                     self.mostexpectedcars[0] = totalcars[j]
                                     self.mostexpectedcars[1] = i
                                     self.mostexpectedcars[2] = j
                     # Reset timers
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] = \
-                        (self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currentgreen"] + 1) % 4
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Maxtimegreen"] = \
-                       self.cycletime
-                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Currenttimegreen"] = 0
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Currentgreen"
+                    ] = (
+                        self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                            "Currentgreen"
+                        ]
+                        + 1
+                    ) % 4
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Maxtimegreen"
+                    ] = self.cycletime
+                    self.trafficlightinfo[f"intersection{i}"]["Timeinfo"][
+                        "Currenttimegreen"
+                    ] = 0
                 if currenttimegreen == maxgreentime:
                     self.trafficlightinfo[f"intersection{i}"]["Timeinfo"]["Allred"] = 1
             if self.mostexpectedcars[0] != 0:
                 # Change green light information of intersection with most expected cars
-                self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"]["Timeinfo"]["Currentgreen"] =\
-                    self.mostexpectedcars[2]
+                self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"][
+                    "Timeinfo"
+                ]["Currentgreen"] = self.mostexpectedcars[2]
 
                 # Get trafficlightnumbers of ligths where most cars are expected
                 mostcars = 0
                 mostcarslight = None
                 comingfrom = np.nansum(self.tlightmatrix, axis=1)
                 for direction in self.lightcombinations[self.mostexpectedcars[2]]:
-                    greenlight = int(self.trafficlightinfo[f"intersection{self.mostexpectedcars[1]}"]\
-                                                        ["Trafficlightinfo"][direction])
+                    greenlight = int(
+                        self.trafficlightinfo[
+                            f"intersection{self.mostexpectedcars[1]}"
+                        ]["Trafficlightinfo"][direction]
+                    )
                     # Where the cars to those lights come from.
-                    lightscomingfrom = np.argwhere(~np.isnan(self.tlightmatrix[:, greenlight]))
+                    lightscomingfrom = np.argwhere(
+                        ~np.isnan(self.tlightmatrix[:, greenlight])
+                    )
                     for light in lightscomingfrom:
                         if light:
                             light = light[0]
@@ -437,23 +511,25 @@ class Intersection(Model):
                     direction = self.lights[mostcarslight][1][1:3]
                     for k, directs in enumerate(self.lightcombinations):
                         if direction in directs[0:3]:
-                            self.trafficlightinfo[f"intersection{intersection}"]["Timeinfo"]["Currentgreen"] = k
+                            self.trafficlightinfo[f"intersection{intersection}"][
+                                "Timeinfo"
+                            ]["Currentgreen"] = k
                             pass
 
         self.datacollector.collect(self)
         self.emission = [0, 0, 0]
-
         self.schedule.step()
 
 
 def batchrun():
+    """This function performs a batchrun depending on the parameters. Here you can se the parameters you want to check."""
     tactics = ["Offset", "Proportional", "Lookahead", "GreenWave"]
     spawnrates = [1, 2, 3, 4, 5]
-    variableParams = {"tactic": tactics,
-                      "spawnrate": spawnrates,
-                      }
-    fixedparams = {"offset": 0,
-                   "cycletime": 90}
+    variableParams = {
+        "tactic": tactics,
+        "spawnrate": spawnrates,
+    }
+    fixedparams = {"offset": 0, "cycletime": 90}
 
     # Initialize batchrunner
     br = BatchRunner(

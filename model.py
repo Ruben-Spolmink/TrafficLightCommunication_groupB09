@@ -330,11 +330,9 @@ class Intersection(Model):
                 car = CarAgent(
                     f"car{self.carID}",
                     self,
-                    50,
                     direction,
                     lane,
-                    [xlocation, ylocation],
-                    self.streetlength,
+                    [xlocation, ylocation]
                 )
                 self.carID += 1
                 self.schedule.add(car)
